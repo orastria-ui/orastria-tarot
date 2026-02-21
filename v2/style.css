@@ -1144,3 +1144,17 @@ body {
   align-items: center;
   gap: 4px;
 }
+
+/* Fix scroll */
+html, body {
+  overflow-x: hidden;
+}
+.landing-screen {
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+}
+.step.active {
+  overflow-y: auto;
+  height: 100vh;
+}
