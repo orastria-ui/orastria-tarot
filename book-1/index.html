@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orastria — Your Personal Astrology Book</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3l7sgHExxg_0zeCAynm68nWOmT1xREpU&libraries=places"></script>
+</head>
+<body>
+
+<!-- ─────────────────────────────────────────────
+     LANDING SCREEN (step 0)
+───────────────────────────────────────────── -->
+<div class="screen active" id="screen-0">
+  <div class="landing-bg"></div>
+  <div class="landing-content">
+    <img src="assets/images/logo.avif" alt="Orastria" class="logo" />
+
+    <!-- badge -->
+    <div class="landing-badge">
+      <span class="landing-badge-dot"></span>
+      Free personalised book
+    </div>
+
+    <h1 class="landing-title">Your stars have a story<br><em>written just for you</em></h1>
+    <p class="landing-title-sub">A fully personalised astrology book based on your exact birth chart</p>
+
+    <!-- Floating SVG book — pure decorative, no user data shown -->
+    <div class="landing-book-wrap">
+      <div class="landing-book-orbit"></div>
+      <svg class="landing-book-svg-el" viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- cover body -->
+        <rect x="10" y="5" width="160" height="230" rx="4" fill="#1a1a2e"/>
+        <rect x="10" y="5" width="160" height="230" rx="4" stroke="#c9a227" stroke-width="2"/>
+        <!-- inner border -->
+        <rect x="22" y="17" width="136" height="206" rx="2" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.4"/>
+        <!-- chart rings — centred in the full cover -->
+        <circle cx="90" cy="120" r="62" stroke="#c9a227" stroke-width="0.9" stroke-opacity="0.5"/>
+        <circle cx="90" cy="120" r="46" stroke="#6b5b95" stroke-width="0.9" stroke-opacity="0.6"/>
+        <circle cx="90" cy="120" r="30" stroke="#c9a227" stroke-width="0.9" stroke-opacity="0.55"/>
+        <circle cx="90" cy="120" r="14" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.4"/>
+        <circle cx="90" cy="120" r="5"  fill="#c9a227" fill-opacity="0.25"/>
+        <!-- cardinal spokes -->
+        <line x1="90" y1="58"  x2="90" y2="46"  stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.5"/>
+        <line x1="90" y1="182" x2="90" y2="194" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.5"/>
+        <line x1="28" y1="120" x2="40"  y2="120" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.5"/>
+        <line x1="140" y1="120" x2="152" y2="120" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.5"/>
+        <!-- diagonal spokes -->
+        <line x1="46" y1="76"  x2="54"  y2="84"  stroke="#c9a227" stroke-width="0.6" stroke-opacity="0.3"/>
+        <line x1="126" y1="76"  x2="134" y2="84"  stroke="#c9a227" stroke-width="0.6" stroke-opacity="0.3"/>
+        <line x1="46" y1="164" x2="54"  y2="156" stroke="#c9a227" stroke-width="0.6" stroke-opacity="0.3"/>
+        <line x1="126" y1="164" x2="134" y2="156" stroke="#c9a227" stroke-width="0.6" stroke-opacity="0.3"/>
+        <!-- planet dots on rings -->
+        <circle cx="90"  cy="58"  r="3.5" fill="#c9a227"/>
+        <circle cx="152" cy="120" r="3"   fill="#6b5b95"/>
+        <circle cx="115" cy="78"  r="2.5" fill="#c9a227" fill-opacity="0.8"/>
+        <circle cx="65"  cy="162" r="2.5" fill="#6b5b95" fill-opacity="0.8"/>
+        <circle cx="44"  cy="100" r="2"   fill="#c9a227" fill-opacity="0.5"/>
+        <circle cx="136" cy="144" r="2"   fill="#c9a227" fill-opacity="0.5"/>
+        <!-- decorative top ornament -->
+        <path d="M78 26 L90 19 L102 26 L90 33 Z" stroke="#c9a227" stroke-width="0.8" fill="#c9a227" fill-opacity="0.08"/>
+        <circle cx="90" cy="26" r="3" fill="#c9a227" fill-opacity="0.4"/>
+        <!-- Orastria branding only -->
+        <text x="90" y="229" text-anchor="middle" fill="#c9a227" font-family="Georgia, serif" font-size="9" font-style="italic" fill-opacity="0.85">Orastria</text>
+        <!-- small crescent and star flanking -->
+        <path d="M31 224 C28 221 28 217 31 214 C26 215 24 220 27 224 Z" fill="#c9a227" fill-opacity="0.5"/>
+        <path d="M149 219 L150.5 215 L152 219 L156 219 L153 222 L154.5 226 L150.5 223 L146.5 226 L148 222 L145 219 Z" fill="#c9a227" fill-opacity="0.4" transform="scale(0.6) translate(97 142)"/>
+        <!-- spine -->
+        <rect x="5" y="5" width="7" height="230" rx="1" fill="#0f0f1a"/>
+        <rect x="5" y="5" width="7" height="230" rx="1" stroke="#c9a227" stroke-width="0.4" stroke-opacity="0.5"/>
+        <text x="8.5" y="130" text-anchor="middle" fill="#c9a227" font-family="Georgia, serif" font-size="5.5" fill-opacity="0.5" transform="rotate(-90 8.5 130)" letter-spacing="2">ORASTRIA</text>
+      </svg>
+      <div class="landing-book-glow"></div>
+    </div>
+
+    <p class="landing-sub">Answer 13 questions and get a <strong style="color:#8a6d10;font-weight:600;">free personalised book</strong> sent to your inbox — covering your life path, relationships, career, and inner self.</p>
+
+    <!-- proof strip -->
+    <div class="landing-proof-strip">
+      <span class="stars">★★★★★</span>
+      <span class="landing-proof-divider"></span>
+      <span><strong style="color:#3a3555;">1.7M+</strong> books created</span>
+      <span class="landing-proof-divider"></span>
+      <span><strong style="color:#3a3555;">60 sec</strong> quiz</span>
+    </div>
+
+    <p class="gender-label">Start by selecting your gender:</p>
+    <div class="gender-row">
+      <button class="btn-gender btn-dark" onclick="selectGender('Male')">♂ Male</button>
+      <button class="btn-gender btn-gold" onclick="selectGender('Female')">♀ Female</button>
+    </div>
+    <button class="btn-gender btn-ghost" onclick="selectGender('Other')" style="max-width:180px;margin:0 auto;">Other</button>
+
+    <!-- trust badges -->
+    <div class="trust-row">
+      <div class="trust-item"><span>🔒</span><span>100% private</span></div>
+      <div class="trust-item"><span>⚡</span><span>Instant delivery</span></div>
+      <div class="trust-item"><span>✦</span><span>No credit card</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────
+     QUIZ WRAPPER (steps 1–13)
+───────────────────────────────────────────── -->
+<div class="screen" id="screen-quiz">
+  <!-- Header -->
+  <header class="quiz-header">
+    <button class="back-btn" id="back-btn" onclick="goBack()">&#8592;</button>
+    <img src="assets/images/logo.avif" alt="Orastria" class="logo-small" />
+    <span class="step-counter"><span id="step-current">1</span> / 13</span>
+  </header>
+
+  <!-- Progress bar -->
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+
+  <!-- Steps container -->
+  <div class="steps-container" id="steps-container">
+
+    <!-- STEP 1: Date of Birth -->
+    <div class="step active" id="step-1">
+      <div class="step-icon">📅</div>
+      <h2>What's your date of birth?</h2>
+      <p class="step-sub">We use this to map the planets at the exact moment you arrived.</p>
+      <div class="dob-row">
+        <select id="dob-month" class="select-input">
+          <option value="">Month</option>
+          <option value="1">January</option><option value="2">February</option>
+          <option value="3">March</option><option value="4">April</option>
+          <option value="5">May</option><option value="6">June</option>
+          <option value="7">July</option><option value="8">August</option>
+          <option value="9">September</option><option value="10">October</option>
+          <option value="11">November</option><option value="12">December</option>
+        </select>
+        <select id="dob-day" class="select-input">
+          <option value="">Day</option>
+        </select>
+        <select id="dob-year" class="select-input">
+          <option value="">Year</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="submitDOB()">Continue</button>
+    </div>
+
+    <!-- STEP 2: Time of Birth -->
+    <div class="step" id="step-2">
+      <div class="step-icon">🕐</div>
+      <h2>What time were you born?</h2>
+      <p class="step-sub">Your rising sign depends on your birth hour — it shapes how the world sees you.</p>
+      <div class="time-row">
+        <select id="birth-hour" class="select-input">
+          <option value="">HH</option>
+        </select>
+        <select id="birth-min" class="select-input">
+          <option value="">MM</option>
+          <option value="00">00</option><option value="05">05</option>
+          <option value="10">10</option><option value="15">15</option>
+          <option value="20">20</option><option value="25">25</option>
+          <option value="30">30</option><option value="35">35</option>
+          <option value="40">40</option><option value="45">45</option>
+          <option value="50">50</option><option value="55">55</option>
+        </select>
+        <select id="birth-ampm" class="select-input">
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
+      </div>
+      <button class="btn-ghost-small" onclick="skipTime()">I don't know my birth time</button>
+      <button class="btn-primary" onclick="submitTime()">Continue</button>
+    </div>
+
+    <!-- STEP 3: Place of Birth -->
+    <div class="step" id="step-3">
+      <div class="step-icon">📍</div>
+      <h2>Where were you born?</h2>
+      <p class="step-sub">Planetary positions vary by location — this makes your chart truly unique.</p>
+      <input type="text" id="birth-place" class="text-input" placeholder="City, Country" />
+      <button class="btn-primary" onclick="submitPlace()">Continue</button>
+    </div>
+
+    <!-- STEP 4: ZODIAC REVEAL (dopamine #1) -->
+    <div class="step step-dark" id="step-4">
+      <div class="zodiac-reveal-wrap">
+        <div class="zodiac-symbol-ring" id="zodiac-ring">
+          <span id="zodiac-emoji" class="zodiac-big-emoji">♐</span>
+        </div>
+        <h2 class="gold-text" id="zodiac-name">Sagittarius</h2>
+        <p id="zodiac-desc" class="zodiac-desc">As a <span id="zodiac-gender-label">Sagittarius</span>, you carry a bold adventurous spirit — always ready to leap toward new horizons with confidence and fire.</p>
+        <div class="zodiac-traits" id="zodiac-traits">
+          <span class="trait-pill">🔥 Adventurous</span>
+          <span class="trait-pill">🎯 Ambitious</span>
+          <span class="trait-pill">💡 Visionary</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="nextStep()">That's me →</button>
+    </div>
+
+    <!-- STEP 5: Relationship Status -->
+    <div class="step" id="step-5">
+      <h2>What's your relationship status?</h2>
+      <div class="options-list">
+        <button class="option-btn" onclick="selectOption(this, 'status', 'Single')">💔 Single</button>
+        <button class="option-btn" onclick="selectOption(this, 'status', 'Single with crush')">💘 Single, but I have a crush</button>
+        <button class="option-btn" onclick="selectOption(this, 'status', 'In a relationship')">💕 In a relationship</button>
+        <button class="option-btn" onclick="selectOption(this, 'status', 'Married')">💍 Married</button>
+        <button class="option-btn" onclick="selectOption(this, 'status', 'Complicated')">🤷 It's complicated</button>
+      </div>
+    </div>
+
+    <!-- STEP 6: Main Goal -->
+    <div class="step" id="step-6">
+      <h2>What's your main goal right now?</h2>
+      <p class="step-sub">Pick the one that resonates most.</p>
+      <div class="options-list">
+        <button class="option-btn" onclick="selectOption(this, 'goal', 'Life path')">🧭 Discover my life path &amp; purpose</button>
+        <button class="option-btn" onclick="selectOption(this, 'goal', 'Self understanding')">🚀 Understand myself better</button>
+        <button class="option-btn" onclick="selectOption(this, 'goal', 'Relationships')">💞 Improve my relationships</button>
+        <button class="option-btn" onclick="selectOption(this, 'goal', 'Career')">💼 Get career guidance</button>
+        <button class="option-btn" onclick="selectOption(this, 'goal', 'Spiritual growth')">🌸 Grow spiritually</button>
+        <button class="option-btn" onclick="selectOption(this, 'goal', 'Happiness')">😊 Find happiness &amp; inner peace</button>
+      </div>
+    </div>
+
+    <!-- STEP 7: Logic vs Emotions -->
+    <div class="step" id="step-7">
+      <h2>Do you act more on logic or emotions?</h2>
+      <div class="options-list options-3">
+        <button class="option-btn" onclick="selectOption(this, 'mindset', 'Logic')">🧠 Logic</button>
+        <button class="option-btn" onclick="selectOption(this, 'mindset', 'Emotions')">❤️ Emotions</button>
+        <button class="option-btn" onclick="selectOption(this, 'mindset', 'Both')">⚖️ A bit of both</button>
+      </div>
+    </div>
+
+    <!-- STEP 8: Love Language -->
+    <div class="step" id="step-8">
+      <h2>How do you express love &amp; affection?</h2>
+      <div class="options-list">
+        <button class="option-btn" onclick="selectOption(this, 'loveLanguage', 'Words')">❤️ Words of affirmation</button>
+        <button class="option-btn" onclick="selectOption(this, 'loveLanguage', 'Touch')">🤲 Physical touch</button>
+        <button class="option-btn" onclick="selectOption(this, 'loveLanguage', 'Quality time')">💑 Quality time</button>
+        <button class="option-btn" onclick="selectOption(this, 'loveLanguage', 'Acts')">🧹 Acts of service</button>
+        <button class="option-btn" onclick="selectOption(this, 'loveLanguage', 'Gifts')">🎁 Gifts</button>
+      </div>
+    </div>
+
+    <!-- STEP 9: RARE PROFILE INSIGHT (dopamine #2) -->
+    <div class="step step-dark" id="step-9">
+      <div class="rare-card">
+        <p class="rare-label">Based on our data</p>
+        <p class="rare-stat">Only <span class="gold-text" id="rare-pct">0.21%</span> of <span id="rare-sign">Sagittarius</span> have a birth chart similar to yours.</p>
+        <p class="rare-desc">You show a rare mix of <span class="gold-text" id="rare-traits">creativity &amp; determination</span> — qualities that can lead to deep relationships and lasting success.</p>
+        <div class="rare-divider"></div>
+        <p class="rare-helped">We've already helped</p>
+        <p class="rare-number gold-text" id="rare-count">89,469 Sagittarius</p>
+        <p class="rare-action">discover their life path &amp; build meaningful relationships.</p>
+      </div>
+      <button class="btn-primary" onclick="nextStep()">Continue →</button>
+    </div>
+
+    <!-- STEP 10: What to include -->
+    <div class="step" id="step-10">
+      <h2>I want my book to include:</h2>
+      <p class="step-sub">Select all that apply.</p>
+      <div class="options-list multi-select" id="include-options">
+        <button class="option-btn" onclick="toggleMulti(this, 'include', 'Personality traits')">🪞 My personality traits analysis</button>
+        <button class="option-btn" onclick="toggleMulti(this, 'include', 'Love compatibility')">💑 In-depth love compatibility</button>
+        <button class="option-btn" onclick="toggleMulti(this, 'include', 'Life path')">🧭 Life path &amp; purpose guide</button>
+        <button class="option-btn" onclick="toggleMulti(this, 'include', 'Career')">💼 Career &amp; financial success</button>
+        <button class="option-btn" onclick="toggleMulti(this, 'include', 'Future predictions')">🔮 Future predictions &amp; key dates</button>
+        <button class="option-btn" onclick="toggleMulti(this, 'include', 'Horoscopes')">🪐 Detailed horoscopes</button>
+      </div>
+      <button class="btn-primary" id="include-continue" onclick="submitIncludes()" style="margin-top:16px;">Continue</button>
+    </div>
+
+    <!-- STEP 11: Your Name -->
+    <div class="step" id="step-11">
+      <div class="step-icon">✨</div>
+      <h2>What's your first name?</h2>
+      <p class="step-sub">It will be printed on the cover of your personalised book.</p>
+      <input type="text" id="user-name" class="text-input" placeholder="Your name" autocomplete="off" />
+      <button class="btn-primary" onclick="submitName()">Continue</button>
+    </div>
+
+    <!-- STEP 12: BOOK COVER PREVIEW (dopamine #3) -->
+    <div class="step" id="step-12">
+      <h2>Personalise your book cover</h2>
+      <p class="step-sub">Choose your colour:</p>
+      <div class="book-preview-wrap">
+        <div class="book-cover-preview" id="book-cover">
+          <svg class="book-svg" viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- cover background -->
+            <rect x="10" y="5" width="160" height="230" rx="4" id="book-bg" fill="#1a1a2e"/>
+            <rect x="10" y="5" width="160" height="230" rx="4" stroke="#c9a227" stroke-width="2"/>
+            <!-- inner decorative border -->
+            <rect x="22" y="17" width="136" height="206" rx="2" stroke="#c9a227" stroke-width="0.7" stroke-opacity="0.4"/>
+
+            <!-- ── NAME BAND at top ─────────────────────────── -->
+            <rect x="22" y="24" width="136" height="26" rx="2" fill="#c9a227" fill-opacity="0.1"/>
+            <rect x="22" y="24" width="136" height="26" rx="2" stroke="#c9a227" stroke-width="0.6" stroke-opacity="0.5"/>
+            <text x="90" y="41" text-anchor="middle" fill="#c9a227"
+                  font-family="Georgia, serif" font-size="12" font-weight="bold"
+                  letter-spacing="0.5" id="cover-name">Your Name</text>
+
+            <!-- subtitle -->
+            <text x="90" y="58" text-anchor="middle" fill="#c9a227"
+                  font-family="Georgia, serif" font-size="6.5" fill-opacity="0.75"
+                  letter-spacing="2">BIRTH CHART READING</text>
+
+            <!-- ── CHART RINGS (centred lower, away from name) -->
+            <circle cx="90" cy="128" r="54" stroke="#c9a227" stroke-width="0.9" stroke-opacity="0.65"/>
+            <circle cx="90" cy="128" r="39" stroke="#6b5b95" stroke-width="0.9" stroke-opacity="0.75"/>
+            <circle cx="90" cy="128" r="24" stroke="#c9a227" stroke-width="0.9" stroke-opacity="0.65"/>
+            <circle cx="90" cy="128" r="8"  fill="#c9a227" fill-opacity="0.12" stroke="#c9a227" stroke-width="0.9"/>
+
+            <!-- cardinal spokes -->
+            <line x1="90" y1="74"  x2="90" y2="64"  stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.5"/>
+            <line x1="90" y1="182" x2="90" y2="192" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.5"/>
+            <line x1="36" y1="128" x2="46"  y2="128" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.5"/>
+            <line x1="134" y1="128" x2="144" y2="128" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.5"/>
+
+            <!-- planet dots -->
+            <circle cx="90"  cy="74"  r="3"   fill="#c9a227"/>
+            <circle cx="144" cy="128" r="2.5"  fill="#6b5b95"/>
+            <circle cx="113" cy="82"  r="2"    fill="#c9a227" fill-opacity="0.8"/>
+            <circle cx="67"  cy="174" r="2"    fill="#6b5b95" fill-opacity="0.8"/>
+
+            <!-- ── ZODIAC GLYPH — small, centred between rings and date -->
+            <!-- 20×20 viewbox at scale(0.8) = 16px wide/tall. Centre x=90 → translate(90-8, y) -->
+            <g id="zodiac-glyph" transform="translate(82, 193) scale(0.8)" fill="none" stroke="#c9a227" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 18 L18 2 M10 2 L18 2 L18 10 M2 10 L9 18"/>
+            </g>
+            <!-- hidden text element kept for JS compat, invisible -->
+            <text id="cover-sign" x="-999" y="-999" fill="none">SAGITTARIUS</text>
+
+            <!-- ── DATE · PLACE ───────────────────────────────── -->
+            <text x="90" y="216" text-anchor="middle" fill="#c9a227"
+                  font-family="Georgia, serif" font-size="6.5" fill-opacity="0.7"
+                  id="cover-date">Jan 1, 1990</text>
+            <text x="90" y="228" text-anchor="middle" fill="#c9a227"
+                  font-family="Georgia, serif" font-size="6.5" fill-opacity="0.7"
+                  id="cover-place">New York</text>
+
+            <!-- spine -->
+            <rect x="5" y="5" width="7" height="230" rx="1" id="book-spine" fill="#0f0f1a"/>
+            <rect x="5" y="5" width="7" height="230" rx="1" stroke="#c9a227" stroke-width="0.4" stroke-opacity="0.5"/>
+            <text x="8.5" y="130" text-anchor="middle" fill="#c9a227"
+                  font-family="Georgia, serif" font-size="5" fill-opacity="0.55"
+                  transform="rotate(-90 8.5 130)" letter-spacing="2">ORASTRIA</text>
+          </svg>
+          <div class="book-glow-preview" id="book-glow"></div>
+        </div>
+      </div>
+      <div class="color-swatches">
+        <button class="swatch active" style="background:#1a1a2e;" data-color="#1a1a2e" onclick="setBookColor(this,'#1a1a2e','#0f0f1a')"></button>
+        <button class="swatch" style="background:#2d1b4e;" data-color="#2d1b4e" onclick="setBookColor(this,'#2d1b4e','#1a0f2e')"></button>
+        <button class="swatch" style="background:#1a2e1a;" data-color="#1a2e1a" onclick="setBookColor(this,'#1a2e1a','#0f1a0f')"></button>
+        <button class="swatch" style="background:#6b2d2d;" data-color="#6b2d2d" onclick="setBookColor(this,'#6b2d2d','#3d1818')"></button>
+        <button class="swatch" style="background:#2d2d4e;" data-color="#2d2d4e" onclick="setBookColor(this,'#2d2d4e','#1a1a2e')"></button>
+        <button class="swatch" style="background:#f5f0e8;" data-color="#f5f0e8" onclick="setBookColor(this,'#f5f0e8','#e8e0d0')"></button>
+      </div>
+      <button class="btn-primary" onclick="nextStep()">Love it! →</button>
+    </div>
+
+    <!-- STEP 13: Email Capture -->
+    <div class="step step-final" id="step-13">
+      <div class="final-book-wrap">
+        <div class="final-book-mini" id="final-book-preview">
+          <!-- dynamically filled -->
+        </div>
+      </div>
+      <h2 class="final-title">🎉 <span id="final-name">Your</span> book is ready!</h2>
+      <p class="final-sub">Enter your email and we'll send your <strong>free personalised astrology book</strong> straight to your inbox.</p>
+      <input type="email" id="user-email" class="text-input" placeholder="your@email.com" />
+      <button class="btn-primary btn-glow" onclick="submitEmail()">✨ Get my free book</button>
+      <p class="privacy-note">🔒 We respect your privacy. No spam, ever.</p>
+    </div>
+
+  </div><!-- /steps-container -->
+</div><!-- /screen-quiz -->
+
+<!-- ─────────────────────────────────────────────
+     LOADING SCREEN
+───────────────────────────────────────────── -->
+<div class="screen" id="screen-loading">
+  <div class="loading-content">
+    <img src="assets/images/logo.avif" alt="Orastria" class="logo" />
+    <h2 class="loading-title">Finalising your<br>Orastria book…</h2>
+    <div class="loading-steps" id="loading-steps">
+      <div class="load-row" id="load-1">
+        <span class="load-icon">🔮</span>
+        <span class="load-label">Mapping your birth chart</span>
+        <span class="load-pct" id="lpct-1">0%</span>
+      </div>
+      <div class="load-bar-track"><div class="load-bar" id="lbar-1"></div></div>
+      <div class="load-row" id="load-2">
+        <span class="load-icon">✨</span>
+        <span class="load-label">Analysing personality traits</span>
+        <span class="load-pct" id="lpct-2">0%</span>
+      </div>
+      <div class="load-bar-track"><div class="load-bar" id="lbar-2"></div></div>
+      <div class="load-row" id="load-3">
+        <span class="load-icon">📖</span>
+        <span class="load-label">Writing your book</span>
+        <span class="load-pct" id="lpct-3">0%</span>
+      </div>
+      <div class="load-bar-track"><div class="load-bar" id="lbar-3"></div></div>
+    </div>
+    <p class="load-sub">Based on data from 134,194 Orastria members &amp; planetary configurations at your exact birth moment.</p>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────
+     THANK YOU / CONFIRMATION SCREEN
+───────────────────────────────────────────── -->
+<div class="screen" id="screen-thankyou">
+  <div class="ty-content">
+    <img src="assets/images/logo.avif" alt="Orastria" class="logo" />
+    <div class="ty-checkmark">✓</div>
+    <h2 class="ty-title">Check your inbox, <span id="ty-name">friend</span>! ✨</h2>
+    <p class="ty-sub">Your free personalised astrology book is on its way. While you wait — unlock the <strong>full 137-page deep-dive</strong> at a special one-time price.</p>
+    <div class="ty-offer-card">
+      <div class="ty-offer-badge">LIMITED OFFER</div>
+      <img src="assets/images/book-flat.png" alt="Full Orastria Book" class="ty-book-img" />
+      <h3>The Complete Orastria Book</h3>
+      <ul class="ty-features">
+        <li>✦ 137 fully personalised pages</li>
+        <li>✦ Deep love &amp; compatibility analysis</li>
+        <li>✦ Career &amp; life path roadmap</li>
+        <li>✦ Future predictions &amp; key dates</li>
+        <li>✦ Tarot, numerology &amp; more</li>
+      </ul>
+      <div class="ty-price-row">
+        <span class="ty-old-price">$54.99</span>
+        <span class="ty-new-price">$24.99</span>
+      </div>
+      <button class="btn-primary btn-glow" style="width:100%;" onclick="alert('Redirect to checkout')">Get the full book →</button>
+      <p class="ty-guarantee">30-day money-back guarantee</p>
+    </div>
+    <button class="btn-ghost-link" onclick="alert('Email sent!')">No thanks, I only want the free book</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-integration.js"></script>
+<script src="quiz.js"></script>
+</body>
+</html>

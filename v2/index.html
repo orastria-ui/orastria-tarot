@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORASTRIA — Reveal Your Destiny</title>
+  <meta name="description" content="The cards are waiting. Unlock your fate with a premium tarot reading experience.">
+  <link rel="icon" type="image/png" href="https://f005.backblazeb2.com/file/mypartner/orastria/favicon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Particles background -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <img src="https://f005.backblazeb2.com/file/mypartner/orastria/logo-white.webp"
+         alt="Orastria" class="logo">
+    <div class="header-live">
+      <span class="live-dot"></span>
+      <span class="live-text"><span id="liveCount">2,847</span> readings today</span>
+    </div>
+  </header>
+
+  <!-- Progress Bar -->
+  <div class="progress-bar-container">
+    <div class="progress-bar-fill" id="progressBar" style="width: 20%"></div>
+    <div class="progress-bar-glow" id="progressBarGlow" style="width: 20%"></div>
+  </div>
+
+    <!-- ===================== LANDING PAGE ===================== -->
+  <div class="step active" id="step0">
+    <div class="landing-screen">
+      <div class="landing-bg"></div>
+      <div class="landing-content">
+        <img src="https://f005.backblazeb2.com/file/mypartner/orastria/logo-white.webp" alt="Orastria" class="landing-logo">
+        
+        <div class="landing-badge">
+          <span class="landing-badge-dot"></span>
+          Free Tarot Reading
+        </div>
+        
+        <h1 class="landing-title">Discover what the cards<br><em>reveal about you</em></h1>
+        <p class="landing-subtitle">A personalized 5-card tarot spread with AI-powered interpretation, delivered in minutes.</p>
+        
+        <div class="cards-hero">
+          <div class="hero-card"></div>
+          <div class="hero-card"></div>
+          <div class="hero-card"></div>
+        </div>
+        
+        <div class="features-list">
+          <div class="feature-item">
+            <span class="feature-icon">🎴</span>
+            <span>5-card personalized spread</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">✨</span>
+            <span>Deep AI-powered interpretation</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">⚡</span>
+            <span>Instant reading in 2 minutes</span>
+          </div>
+        </div>
+        
+        <div class="social-proof">
+          <span class="stars">★★★★★</span>
+          <span class="social-divider">·</span>
+          <span><strong>47,000+</strong> readings</span>
+          <span class="social-divider">·</span>
+          <span><strong>Free</strong></span>
+        </div>
+        
+        <button class="btn-cta-landing" onclick="startFromLanding()">
+          Start My Free Reading →
+        </button>
+        
+        <div class="trust-row-landing">
+          <div class="trust-item-landing">🔒 100% Private</div>
+          <div class="trust-item-landing">⚡ Instant</div>
+          <div class="trust-item-landing">✦ No card needed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===================== STEP 1: Category ===================== -->
+  <div class="step" id="step1">
+    <div class="card-panel">
+      <div class="step-badge">STEP 1</div>
+      <h1 class="title">Choose Your <span class="gold">Destiny</span></h1>
+      <p class="subtitle">What area of your life needs divine guidance?</p>
+
+      <div class="category-grid">
+        <div class="category-tile" data-category="general" onclick="selectCategory(this)">
+          <div class="category-glow"></div>
+          <div class="category-icon">&#128302;</div>
+          <div class="category-name">General</div>
+          <div class="category-sub">Life Path</div>
+        </div>
+        <div class="category-tile" data-category="love" onclick="selectCategory(this)">
+          <div class="category-glow"></div>
+          <div class="category-icon">&#128153;</div>
+          <div class="category-name">Love</div>
+          <div class="category-sub">Heart & Soul</div>
+        </div>
+        <div class="category-tile" data-category="money" onclick="selectCategory(this)">
+          <div class="category-glow"></div>
+          <div class="category-icon">&#128176;</div>
+          <div class="category-name">Money</div>
+          <div class="category-sub">Wealth & Career</div>
+        </div>
+        <div class="category-tile" data-category="health" onclick="selectCategory(this)">
+          <div class="category-glow"></div>
+          <div class="category-icon">&#9889;</div>
+          <div class="category-name">Health</div>
+          <div class="category-sub">Energy & Vitality</div>
+        </div>
+      </div>
+
+      <button class="btn-main" id="step1Btn" disabled onclick="nextStep(2)">
+        <span class="btn-text">CONTINUE</span>
+        <span class="btn-arrow">&#8594;</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================== STEP 2: Question ===================== -->
+  <div class="step" id="step2">
+    <div class="card-panel">
+      <div class="step-badge">STEP 2</div>
+      <h1 class="title">Ask the <span class="gold">Universe</span></h1>
+      <p class="subtitle">Type your question. Be bold. The cards don't judge.</p>
+
+      <div class="input-group">
+        <textarea id="questionInput" class="textarea-dark" placeholder="What do you want to know?" maxlength="300" oninput="validateQuestion()"></textarea>
+        <div class="char-counter"><span id="charCount">0</span>/300</div>
+      </div>
+
+      <div class="suggestions" id="suggestions"></div>
+
+      <button class="btn-main" id="step2Btn" disabled onclick="nextStep(3)">
+        <span class="btn-text">CONTINUE</span>
+        <span class="btn-arrow">&#8594;</span>
+      </button>
+      <button class="btn-ghost" onclick="nextStep(1)">&#8592; Back</button>
+    </div>
+  </div>
+
+  <!-- ===================== STEP 3: Email ===================== -->
+  <div class="step" id="step3">
+    <div class="card-panel">
+      <div class="step-badge">STEP 3</div>
+      <h1 class="title">Secure Your <span class="gold">Reading</span></h1>
+      <p class="subtitle">Enter your email so we can save your reading forever.</p>
+
+      <div class="input-group">
+        <input type="email" id="emailInput" class="input-dark" placeholder="your@email.com" oninput="validateEmail()">
+      </div>
+
+      <div class="trust-row">
+        <div class="trust-item">&#128274; Encrypted</div>
+        <div class="trust-item">&#128683; No spam</div>
+        <div class="trust-item">&#10003; Private</div>
+      </div>
+
+      <button class="btn-main btn-gold-glow" id="step3Btn" disabled onclick="nextStep(4)">
+        <span class="btn-text">&#9733; DRAW MY CARDS &#9733;</span>
+      </button>
+      <button class="btn-ghost" onclick="nextStep(2)">&#8592; Back</button>
+    </div>
+  </div>
+
+  <!-- ===================== STEP 4: Shuffle & Deal ===================== -->
+  <div class="step" id="step4">
+    <div class="card-panel">
+      <div class="shuffle-stage">
+        <!-- Deck animation -->
+        <div class="deck-container" id="deckContainer">
+          <div class="deck-card dc-1"></div>
+          <div class="deck-card dc-2"></div>
+          <div class="deck-card dc-3"></div>
+          <div class="deck-card dc-4"></div>
+          <div class="deck-card dc-5"></div>
+        </div>
+
+        <h2 class="shuffle-title" id="shuffleTitle">Shuffling the Deck</h2>
+        <p class="shuffle-sub" id="shuffleSub">The universe is aligning your cards...</p>
+
+        <!-- Energy bar -->
+        <div class="energy-bar">
+          <div class="energy-fill" id="energyFill"></div>
+          <div class="energy-sparks" id="energySparks"></div>
+        </div>
+        <div class="energy-label" id="energyLabel">0%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== STEP 5: Card Reveal ===================== -->
+  <div class="step" id="step5">
+    <div class="card-panel reveal-panel">
+      <h1 class="title">Your <span class="gold">Reading</span></h1>
+
+      <!-- Cards Row -->
+      <div class="reveal-cards" id="revealCards">
+        <!-- Cards injected by JS -->
+      </div>
+
+      <!-- Flip prompt -->
+      <div class="flip-prompt" id="flipPrompt">
+        <span class="flip-pulse">&#128071;</span> Tap a card to reveal it
+      </div>
+
+      <!-- Interpretations -->
+      <div class="interpretations" id="interpretations"></div>
+
+      <!-- Synthesis -->
+      <div class="synthesis-box" id="synthesisBox"></div>
+
+      <!-- Paywall -->
+      <div class="paywall" id="paywall">
+        <!-- Countdown -->
+        <div class="paywall-urgency">
+          <div class="countdown-badge">
+            <span class="countdown-icon">&#9201;</span>
+            <span>Offer expires in <strong id="countdown">4:59</strong></span>
+          </div>
+          <div class="spots-badge">
+            <span class="spots-icon">&#128293;</span>
+            <span>Only <strong id="spotsLeft">7</strong> spots left at this price</span>
+          </div>
+        </div>
+
+        <div class="paywall-box">
+          <div class="paywall-header">
+            <div class="mystery-cards">
+              <div class="mystery-card mc-pulse">?</div>
+              <div class="mystery-card mc-pulse" style="animation-delay:.15s">?</div>
+              <div class="mystery-card mc-pulse" style="animation-delay:.3s">?</div>
+            </div>
+            <h2 class="paywall-title">3 Cards Still Hidden</h2>
+            <p class="paywall-sub">Your reading has a <strong class="gold multiplier-text" id="multiplierText">3.2x</strong> energy multiplier. Unlock before it fades.</p>
+          </div>
+
+          <div class="paywall-features">
+            <div class="pf-item"><span class="pf-check">&#10003;</span> Full 5-card interpretation</div>
+            <div class="pf-item"><span class="pf-check">&#10003;</span> Personalized synthesis</div>
+            <div class="pf-item"><span class="pf-check">&#10003;</span> 1 bonus reading (new question)</div>
+            <div class="pf-item"><span class="pf-check">&#10003;</span> Reading saved to your email</div>
+          </div>
+
+          <div class="paywall-price">
+            <span class="price-old">&euro;12</span>
+            <span class="price-current">&euro;5</span>
+            <span class="price-label">for 2 complete readings</span>
+          </div>
+
+          <button class="btn-main btn-gold-glow btn-lg" onclick="handlePayment()">
+            <span class="btn-text">&#128275; UNLOCK FULL READING</span>
+          </button>
+
+          <p class="paywall-guarantee">Instant access &middot; Secure payment &middot; Satisfaction guaranteed</p>
+        </div>
+      </div>
+
+      <!-- New reading (after payment) -->
+      <div class="new-reading hidden" id="newReadingSection">
+        <button class="btn-main btn-gold-glow" onclick="startNewReading()">
+          <span class="btn-text">&#9733; ASK ANOTHER QUESTION &#9733;</span>
+        </button>
+        <p class="bonus-note">You have 1 bonus reading remaining</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    ORASTRIA &copy; 2025 &middot; For entertainment purposes
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-integration.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>

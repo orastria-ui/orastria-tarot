@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orastria — Choose Your Experience</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #0A0A0F; color: #FAFAF5; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .container { text-align: center; padding: 40px 20px; max-width: 500px; }
+    .logo { width: 200px; margin-bottom: 24px; }
+    h1 { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 8px; }
+    .gold { background: linear-gradient(135deg, #D4A843, #F5D26E); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    p { color: #6B6B78; font-size: 14px; margin-bottom: 32px; }
+    .versions { display: flex; flex-direction: column; gap: 16px; }
+    a.version { display: block; padding: 20px; border-radius: 14px; text-decoration: none; color: #FAFAF5; font-weight: 600; font-size: 15px; transition: all 0.3s ease; }
+    a.version:hover { transform: translateY(-2px); }
+    .v1-link { background: #FAF7F2; color: #2C2C2C; border: 1px solid #E5DDD0; }
+    .v1-link:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .v1-sub { font-size: 12px; color: #6B6B6B; font-weight: 400; margin-top: 4px; }
+    .v2-link { background: linear-gradient(135deg, #A07C2A, #D4A843, #F5D26E); color: #0A0A0F; }
+    .v2-link:hover { box-shadow: 0 4px 30px rgba(212,168,67,0.3); }
+    .v2-sub { font-size: 12px; color: rgba(10,10,15,0.6); font-weight: 400; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://f005.backblazeb2.com/file/mypartner/orastria/logo-white.webp" alt="Orastria" class="logo">
+    <h1>Choose Your <span class="gold">Experience</span></h1>
+    <p>Two ways to discover what the cards hold for you</p>
+    <div class="versions">
+      <a href="/v1/" class="version v1-link">
+        Elegant Reading
+        <div class="v1-sub">Clean, minimal, and serene</div>
+      </a>
+      <a href="/v2/" class="version v2-link">
+        Casino Royale Experience
+        <div class="v2-sub">Dramatic reveals, card rarity, and full suspense</div>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
