@@ -861,12 +861,12 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 40px 24px;
+  padding: 20px 24px;
   overflow: hidden;
 }
 
 .landing-bg {
-  position: fixed;
+  position: relative;
   inset: 0;
   background: #FFFFFF;
   z-index: 0;
@@ -1034,3 +1034,11 @@ body {
 
 
 
+
+/* Fix landing position */
+.landing-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  justify-content: flex-start;
+  padding-top: 60px;
+}
