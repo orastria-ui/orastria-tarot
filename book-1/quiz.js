@@ -117,28 +117,111 @@ document.addEventListener('DOMContentLoaded', () => {
 function initPlacesAutocomplete() {
   const input = document.getElementById('birth-place');
   if (!input) return;
-  
-  // Wait for Google Maps API to be ready
-  if (!window.google || !window.google.maps || !window.google.maps.places) {
-    setTimeout(initPlacesAutocomplete, 100);
-    return;
-  }
 
-  try {
-    placesAutocomplete = new google.maps.places.Autocomplete(input, {
-      types: ['(cities)'],
-      fields: ['formatted_address', 'name', 'geometry', 'address_components']
-    });
+  let autocompleteList = null;
+  let selectedIndex = -1;
 
-    placesAutocomplete.addListener('place_changed', () => {
-      const place = placesAutocomplete.getPlace();
-      if (place && (place.formatted_address || place.name)) {
-        input.value = place.formatted_address || place.name;
+  // Create autocomplete dropdown
+  const dropdown = document.createElement('div');
+  dropdown.className = 'autocomplete-dropdown';
+  dropdown.style.cssText = 'position:absolute;background:#fff;border:1px solid #ddd;border-radius:8px;max-height:300px;overflow-y:auto;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:none;';
+  input.parentNode.style.position = 'relative';
+  input.parentNode.appendChild(dropdown);
+
+  let debounceTimer;
+
+  input.addEventListener('input', async (e) => {
+    clearTimeout(debounceTimer);
+    const query = e.target.value.trim();
+
+    if (query.length < 3) {
+      dropdown.style.display = 'none';
+      return;
+    }
+
+    debounceTimer = setTimeout(async () => {
+      try {
+        const response = await fetch(`https://google-places-proxy.sherymadodomy.workers.dev?input=${encodeURIComponent(query)}&types=(cities)`);
+        const data = await response.json();
+
+        if (data.status === 'OK' && data.predictions && data.predictions.length > 0) {
+          autocompleteList = data.predictions;
+          renderDropdown(data.predictions);
+        } else {
+          dropdown.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Autocomplete error:', error);
+        dropdown.style.display = 'none';
       }
+    }, 300);
+  });
+
+  function renderDropdown(predictions) {
+    dropdown.innerHTML = '';
+    selectedIndex = -1;
+
+    predictions.forEach((prediction, index) => {
+      const item = document.createElement('div');
+      item.style.cssText = 'padding:12px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;color:#333;';
+      item.textContent = prediction.description;
+      
+      item.addEventListener('mouseenter', () => {
+        item.style.backgroundColor = '#f5f5f5';
+      });
+      
+      item.addEventListener('mouseleave', () => {
+        item.style.backgroundColor = 'transparent';
+      });
+      
+      item.addEventListener('click', () => {
+        input.value = prediction.description;
+        dropdown.style.display = 'none';
+      });
+      
+      dropdown.appendChild(item);
     });
-  } catch (e) {
-    console.error('Places Autocomplete error:', e);
+
+    dropdown.style.display = 'block';
+    dropdown.style.width = input.offsetWidth + 'px';
   }
+
+  // Keyboard navigation
+  input.addEventListener('keydown', (e) => {
+    if (!dropdown.style.display || dropdown.style.display === 'none') return;
+    
+    const items = dropdown.children;
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+      highlightItem();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIndex = Math.max(selectedIndex - 1, 0);
+      highlightItem();
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault();
+      input.value = autocompleteList[selectedIndex].description;
+      dropdown.style.display = 'none';
+    } else if (e.key === 'Escape') {
+      dropdown.style.display = 'none';
+    }
+  });
+
+  function highlightItem() {
+    const items = dropdown.children;
+    Array.from(items).forEach((item, index) => {
+      item.style.backgroundColor = index === selectedIndex ? '#e8eaed' : 'transparent';
+    });
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (e.target !== input && !dropdown.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
 }
 
 function populateDaySelect() {
