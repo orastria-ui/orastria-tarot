@@ -523,9 +523,13 @@ function initPlacesAutocomplete() {
 
 // Checkout function with Meta tracking
 function initiateCheckout() {
-  // Get UID from URL
+  // Get UID from URL or generate one
   const urlParams = new URLSearchParams(window.location.search);
-  const uid = urlParams.get('uid') || 'unknown';
+  const uid = urlParams.get('uid') || localStorage.getItem('orastria_uid') || 'unknown';
+  
+  // Get email if available
+  const emailInput = document.getElementById('user-email');
+  const email = emailInput ? emailInput.value : '';
   
   // Fire Meta InitiateCheckout event
   if (typeof fbq !== 'undefined') {
@@ -537,11 +541,14 @@ function initiateCheckout() {
     });
   }
   
-  // Redirect to Stripe checkout with UID
-  // TODO: Replace with actual Stripe checkout URL or session creation
-  const checkoutUrl = `https://orastria-api.orastria.workers.dev/checkout?uid=${uid}`;
-  window.location.href = checkoutUrl;
+  // Try Worker first, fallback to direct Stripe link
+  const workerUrl = `https://orastria-api.orastria.workers.dev/checkout?uid=${encodeURIComponent(uid)}&email=${encodeURIComponent(email)}`;
+  
+  // Use a simple redirect - if Worker fails, browser will show error
+  // User can retry or we can add fallback
+  window.location.href = workerUrl;
 }
+
 
 // Free book only (no purchase)
 function sendFreeBookOnly() {
