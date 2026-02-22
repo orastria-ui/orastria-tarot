@@ -1,71 +1,85 @@
-/**
- * Orastria Supabase Integration - Checkout Tracking
- * Updates add_to_cart and buy columns for user journey tracking
- */
-
+// Supabase Integration for Orastria Book-1
+// Load Supabase client from CDN
 const SUPABASE_URL = 'https://bkxgpjxfexndjwawaiph.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_qw9JxZ0SwYY5s_yOOylcgg_BWF2FnQ7';
 
-/**
- * Update submission record with add_to_cart or buy event
- * @param {string} uid - User UUID
- * @param {string} field - 'add_to_cart' or 'buy'
- */
-async function trackConversion(uid, field) {
-  if (!uid) {
-    console.warn(`⚠️ Cannot track ${field} - no UID found`);
-    return;
-  }
+// Load Supabase library
+(function loadSupabase() {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    script.onload = () => {
+        window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✓ Supabase connected to Orastria database');
+    };
+    script.onerror = () => console.error('Failed to load Supabase');
+    document.head.appendChild(script);
+})();
 
-  // Validate field
-  if (field !== 'add_to_cart' && field !== 'buy') {
-    console.error(`Invalid field: ${field}. Must be 'add_to_cart' or 'buy'`);
-    return;
-  }
-
-  try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/orastria_submissions?user_id=eq.${uid}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        [field]: 'yes'
-      })
-    });
-
-    if (response.ok) {
-      console.log(`✓ Tracked ${field} for user:`, uid);
-    } else {
-      const error = await response.text();
-      console.error(`Failed to track ${field}:`, response.status, error);
+// Get user IP
+async function getUserIP() {
+    try {
+        const res = await fetch('https://api.ipify.org?format=json');
+        const data = await res.json();
+        return data.ip;
+    } catch (e) {
+        console.warn('Could not fetch IP:', e);
+        return null;
     }
-  } catch (error) {
-    console.error(`Error tracking ${field}:`, error);
-  }
 }
 
-/**
- * Track add-to-cart event (checkout button click)
- */
-async function trackAddToCart() {
-  const uid = window.orastriaUID || localStorage.getItem('orastria_uid');
-  await trackConversion(uid, 'add_to_cart');
+// Submit to Supabase
+async function submitToOrastriaDB(formData) {
+    if (!window.supabaseClient) {
+        console.error('Supabase not loaded');
+        return { success: false, error: 'Database not ready' };
+    }
+
+    try {
+        // Get IP address
+        const ipAddress = await getUserIP();
+        
+        // Get fbclid from localStorage
+        const fbclid = localStorage.getItem('orastria_fbclid') || null;
+
+        const { data, error } = await window.supabaseClient
+            .from('orastria_submissions')
+            .insert([{
+                user_id: window.orastriaUID || null,
+                email: formData.email || null,
+                first_name: formData.firstName || null,
+                last_name: formData.lastName || null,
+                date_birth: formData.dateBirth || null,
+                hcur_min_am: formData.birthTime || null,
+                place_of_birth: formData.birthPlace || null,
+                place_birth_coordonate: formData.placeCoords || null,
+                sun_sign: formData.zodiac || null,
+                genre: formData.gender || null,
+                single: formData.status === 'single',
+                answer_question: formData.goal || null,
+                answer_answer: formData.mindset || null,
+                color_book: formData.coverColor || null,
+                variant: 'book-1',
+                user_agent: navigator.userAgent,
+                ip_address: ipAddress,
+                fbclid: fbclid,
+                lang: 'en'
+            }])
+            .select();
+
+        if (error) {
+            console.error('Supabase error:', error);
+            return { success: false, error: error.message };
+        }
+
+        console.log('✓ Submitted to Orastria database:', data);
+        console.log('  → IP:', ipAddress, '| fbclid:', fbclid ? fbclid.substring(0,20)+'...' : 'none');
+        return { success: true, data: data[0] };
+
+    } catch (err) {
+        console.error('Submission error:', err);
+        return { success: false, error: err.message };
+    }
 }
 
-/**
- * Track purchase event (thank you page load)
- */
-async function trackPurchase() {
-  const uid = window.orastriaUID || localStorage.getItem('orastria_uid');
-  await trackConversion(uid, 'buy');
-}
-
-// Export for use in other scripts
-window.orastriaTracking = {
-  trackAddToCart,
-  trackPurchase
-};
+// Export for use in quiz.js
+window.submitToOrastriaDB = submitToOrastriaDB;
