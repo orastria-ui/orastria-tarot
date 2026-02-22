@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Autocomplete Test</title>
+<style>
+body { font-family: Arial; padding: 40px; }
+input { padding: 12px; font-size: 16px; width: 400px; border: 2px solid #ddd; border-radius: 8px; }
+.dropdown { position: absolute; background: white; border: 1px solid #ddd; border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; width: 400px; }
+.dropdown-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+.dropdown-item:hover { background-color: #f5f5f5; }
+#log { margin-top: 20px; padding: 20px; background: #f5f5f5; border-radius: 8px; font-family: monospace; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+
+<h1>Orastria Places Autocomplete Test</h1>
+<p>Type a city name (2+ characters):</p>
+
+<div style="position: relative;">
+  <input type="text" id="birth-place" placeholder="City, Country" />
+  <div class="dropdown" id="dropdown"></div>
+</div>
+
+<div id="log"></div>
+
+<script>
+const input = document.getElementById('birth-place');
+const dropdown = document.getElementById('dropdown');
+const log = document.getElementById('log');
+
+function addLog(msg) {
+  log.textContent += `[${new Date().toISOString()}] ${msg}\n`;
+}
+
+addLog('Script loaded');
+
+let debounceTimer;
+
+input.addEventListener('input', async (e) => {
+  clearTimeout(debounceTimer);
+  const query = e.target.value.trim();
+  
+  addLog(`Input: "${query}" (length: ${query.length})`);
+
+  if (query.length < 2) {
+    dropdown.style.display = 'none';
+    addLog('Too short, hiding dropdown');
+    return;
+  }
+
+  debounceTimer = setTimeout(async () => {
+    addLog('Fetching from API...');
+    
+    try {
+      const url = `https://orastria-api.orastria.workers.dev/places?input=${encodeURIComponent(query)}&types=(cities)`;
+      addLog(`URL: ${url}`);
+      
+      const response = await fetch(url);
+      addLog(`Response status: ${response.status}`);
+      
+      const data = await response.json();
+      addLog(`Response data: ${JSON.stringify(data).substring(0, 200)}...`);
+
+      if (data.status === 'OK' && data.predictions && data.predictions.length > 0) {
+        addLog(`Got ${data.predictions.length} predictions`);
+        renderDropdown(data.predictions);
+      } else {
+        addLog('No predictions or bad status');
+        dropdown.style.display = 'none';
+      }
+    } catch (error) {
+      addLog(`ERROR: ${error.message}`);
+      dropdown.style.display = 'none';
+    }
+  }, 300);
+});
+
+function renderDropdown(predictions) {
+  dropdown.innerHTML = '';
+  
+  predictions.forEach(prediction => {
+    const item = document.createElement('div');
+    item.className = 'dropdown-item';
+    item.textContent = prediction.description;
+    
+    item.addEventListener('click', () => {
+      input.value = prediction.description;
+      dropdown.style.display = 'none';
+      addLog(`Selected: ${prediction.description}`);
+    });
+    
+    dropdown.appendChild(item);
+  });
+
+  dropdown.style.display = 'block';
+  addLog('Dropdown shown');
+}
+
+addLog('Event listener attached');
+</script>
+
+</body>
+</html>
