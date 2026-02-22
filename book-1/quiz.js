@@ -141,7 +141,7 @@ function initPlacesAutocomplete() {
 
     debounceTimer = setTimeout(async () => {
       try {
-        const response = await fetch(`https://google-places-proxy.sherymadodomy.workers.dev?input=${encodeURIComponent(query)}&types=(cities)`);
+        const response = await fetch(`https://orastria-places-proxy.orastria.workers.dev?input=${encodeURIComponent(query)}&types=(cities)`);
         const data = await response.json();
 
         if (data.status === 'OK' && data.predictions && data.predictions.length > 0) {
