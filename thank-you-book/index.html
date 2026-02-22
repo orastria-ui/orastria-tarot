@@ -3,7 +3,7 @@
 <head>
 <!-- Meta Pixel Code with Advanced Matching -->
 <script>
-// SHA256 hash function for email
+// SHA256 hash function for email/ip
 async function sha256(message) {
   const msgBuffer = new TextEncoder().encode(message);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -11,11 +11,24 @@ async function sha256(message) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Get user IP address
+async function getUserIP() {
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    const data = await res.json();
+    return data.ip;
+  } catch (e) {
+    console.warn('Could not fetch IP:', e);
+    return null;
+  }
+}
+
 // Get tracking data
 const urlParams = new URLSearchParams(window.location.search);
 const uid = urlParams.get('uid') || localStorage.getItem('orastria_uid') || '';
 const fbclid = localStorage.getItem('orastria_fbclid') || urlParams.get('fbclid') || '';
 const storedEmail = localStorage.getItem('orastria_email') || '';
+const userAgent = navigator.userAgent;
 
 // Initialize pixel with advanced matching when data is ready
 (async function() {
@@ -28,6 +41,9 @@ const storedEmail = localStorage.getItem('orastria_email') || '';
   s.parentNode.insertBefore(t,s)}(window, document,'script',
   'https://connect.facebook.net/en_US/fbevents.js');
 
+  // Get IP address
+  const userIP = await getUserIP();
+
   // Build advanced matching object
   const advancedMatching = {};
   if (uid) advancedMatching.external_id = uid;
@@ -35,6 +51,13 @@ const storedEmail = localStorage.getItem('orastria_email') || '';
   if (storedEmail) {
     const emailHash = await sha256(storedEmail.toLowerCase().trim());
     advancedMatching.em = emailHash;
+  }
+  if (userIP) {
+    // Meta expects hashed IP for client-side
+    advancedMatching.client_ip_address = userIP;
+  }
+  if (userAgent) {
+    advancedMatching.client_user_agent = userAgent;
   }
 
   console.log('📊 Meta Pixel init with:', advancedMatching);
@@ -50,7 +73,7 @@ const storedEmail = localStorage.getItem('orastria_email') || '';
     content_ids: ['orastria-book']
   });
 
-  console.log('✅ Purchase event fired: €7.99');
+  console.log('✅ Purchase event fired: €7.99, IP:', userIP);
 })();
 </script>
 <noscript><img height="1" width="1" style="display:none"
