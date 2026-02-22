@@ -564,12 +564,12 @@ function initiateCheckout() {
     });
   }
   
-  // Try Worker first, fallback to direct Stripe link
-  const workerUrl = `https://orastria-api.orastria.workers.dev/checkout?uid=${encodeURIComponent(uid)}&email=${encodeURIComponent(email)}`;
+  // Redirect directly to Stripe Payment Link (bypasses Worker completely)
+  const stripePaymentLink = 'https://buy.stripe.com/dRmbJ188V6dEc7G76C2sM0y';
+  const checkoutUrl = stripePaymentLink + '?client_reference_id=' + encodeURIComponent(uid) + '&prefilled_email=' + encodeURIComponent(email);
   
-  // Use a simple redirect - if Worker fails, browser will show error
-  // User can retry or we can add fallback
-  window.location.href = workerUrl;
+  console.log('→ REDIRECTING TO STRIPE:', checkoutUrl);
+  window.location.replace(checkoutUrl);
 }
 
 
