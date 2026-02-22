@@ -536,8 +536,8 @@ function initiateCheckout() {
     fbq('track', 'InitiateCheckout', {
       content_name: 'Astrology Book',
       content_category: 'book',
-      value: 24.99,
-      currency: 'USD'
+      value: 7.99,
+      currency: 'EUR'
     });
   }
   
