@@ -134,7 +134,7 @@ function initPlacesAutocomplete() {
     clearTimeout(debounceTimer);
     const query = e.target.value.trim();
 
-    if (query.length < 3) {
+    if (query.length < 2) {
       dropdown.style.display = 'none';
       return;
     }
