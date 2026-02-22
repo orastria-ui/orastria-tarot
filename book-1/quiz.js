@@ -141,7 +141,7 @@ function initPlacesAutocomplete() {
 
     debounceTimer = setTimeout(async () => {
       try {
-        const response = await fetch(`https://orastria-proxy.orastria.workers.dev/api/places/autocomplete?input=${encodeURIComponent(query)}`);
+        const response = await fetch(`https://orastria-api.orastria.workers.dev/places?input=${encodeURIComponent(query)}`);
         const data = await response.json();
 
         if (data.status === 'OK' && data.predictions && data.predictions.length > 0) {

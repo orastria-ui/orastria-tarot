@@ -36,7 +36,7 @@
       
       debounce = setTimeout(async () => {
         try {
-          const url = `https://orastria-proxy.orastria.workers.dev/api/places/autocomplete?input=${encodeURIComponent(query)}`;
+          const url = `https://orastria-api.orastria.workers.dev/places?input=${encodeURIComponent(query)}`;
           log.textContent = 'Fetching: ' + url;
           
           const response = await fetch(url);
