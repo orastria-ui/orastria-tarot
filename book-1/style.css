@@ -973,3 +973,36 @@ body {
   .landing-content, .ty-content { padding: 48px 40px 60px; }
   .step { padding: 40px 32px 48px; }
 }
+
+/* Autocomplete dropdown styles */
+.autocomplete-dropdown {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: #fff !important;
+  border: 1px solid #ddd !important;
+  border-radius: 8px !important;
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  z-index: 9999 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  margin-top: 4px !important;
+}
+.autocomplete-dropdown > div {
+  padding: 12px 16px !important;
+  cursor: pointer !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  font-size: 14px !important;
+  color: #333 !important;
+}
+.autocomplete-dropdown > div:hover {
+  background-color: #f5f5f5 !important;
+}
+.step {
+  position: relative;
+  overflow: visible !important;
+}
+#step-3 {
+  overflow: visible !important;
+}
