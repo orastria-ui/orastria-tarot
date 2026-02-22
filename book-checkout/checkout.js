@@ -2,10 +2,6 @@
  * Orastria Checkout - Personalization & CTA handlers
  */
 
-// ── SUPABASE CONFIG ───────────────────────────────────────────
-const SUPABASE_URL = 'https://bkxgpjxfexndjwawaiph.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_qw9JxZ0SwYY5s_yOOylcgg_BWF2FnQ7';
-
 // ── PERSONALIZATION ───────────────────────────────────────────
 
 function getUserData() {
@@ -29,13 +25,13 @@ async function fetchUserFromDB(uid) {
   console.log('→ Fetching user from database for UID:', uid);
   
   try {
-    const url = `${SUPABASE_URL}/rest/v1/orastria_submissions?user_id=eq.${uid}`;
+    const url = `${window.SUPABASE_URL}/rest/v1/orastria_submissions?user_id=eq.${uid}`;
     console.log('→ Query URL:', url);
     
     const response = await fetch(url, {
       headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        'apikey': window.SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`
       }
     });
     

@@ -3,8 +3,12 @@
  * Updates add_to_cart and buy columns for user journey tracking
  */
 
-const SUPABASE_URL = 'https://bkxgpjxfexndjwawaiph.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_qw9JxZ0SwYY5s_yOOylcgg_BWF2FnQ7';
+// Export Supabase config globally for use in checkout.js
+window.SUPABASE_URL = 'https://bkxgpjxfexndjwawaiph.supabase.co';
+window.SUPABASE_ANON_KEY = 'sb_publishable_qw9JxZ0SwYY5s_yOOylcgg_BWF2FnQ7';
+
+const SUPABASE_URL = window.SUPABASE_URL;
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY;
 
 /**
  * Update submission record with add_to_cart or buy event
