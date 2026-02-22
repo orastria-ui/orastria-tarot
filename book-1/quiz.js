@@ -385,7 +385,18 @@ async function submitEmail() {
     goal: state.goal,
     mindset: state.mindset,
     coverColor: state.coverColor
-  }).then(r => r.success ? console.log('✓ DB saved:', r.data.id) : console.error('DB error:', r.error)) : Promise.resolve();
+  }).then(r => {
+    if (r.success) {
+      console.log('✓ DB saved:', r.data.id);
+      // Create Klaviyo profile after DB save
+      if (window.createKlaviyoProfile) {
+        const uid = window.orastriaUID || localStorage.getItem('orastria_uid');
+        window.createKlaviyoProfile(state.email, state.name.split(' ')[0] || state.name, uid);
+      }
+    } else {
+      console.error('DB error:', r.error);
+    }
+  }) : Promise.resolve();
 
   // Send to n8n webhook (matching old Bubble format)
   const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];

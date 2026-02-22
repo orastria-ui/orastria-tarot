@@ -74,6 +74,24 @@ const userAgent = navigator.userAgent;
   });
 
   console.log('✅ Purchase event fired: €7.99, IP:', userIP);
+
+  // Update Supabase buy=true and Klaviyo pay?=yes
+  if (uid) {
+    fetch('https://orastria-api.orastria.workers.dev/klaviyo/purchase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid: uid })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        console.log('✅ Purchase recorded in Supabase & Klaviyo');
+      } else {
+        console.warn('Purchase record failed:', data.error);
+      }
+    })
+    .catch(err => console.error('Purchase API error:', err));
+  }
 })();
 </script>
 <noscript><img height="1" width="1" style="display:none"

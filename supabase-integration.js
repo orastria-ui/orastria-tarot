@@ -78,5 +78,28 @@ async function submitToOrastriaDB(formData) {
     }
 }
 
+// Create Klaviyo profile and subscribe to list
+async function createKlaviyoProfile(email, firstName, uid) {
+    try {
+        const res = await fetch('https://orastria-api.orastria.workers.dev/klaviyo/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, firstName, uid })
+        });
+        const data = await res.json();
+        if (data.success) {
+            console.log('✓ Klaviyo profile created:', data.klaviyo_id);
+            return data.klaviyo_id;
+        } else {
+            console.error('Klaviyo error:', data.error);
+            return null;
+        }
+    } catch (err) {
+        console.error('Klaviyo request failed:', err);
+        return null;
+    }
+}
+
 // Export for use in quiz.js
 window.submitToOrastriaDB = submitToOrastriaDB;
+window.createKlaviyoProfile = createKlaviyoProfile;
