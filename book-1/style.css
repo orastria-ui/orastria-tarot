@@ -1006,3 +1006,18 @@ body {
 #step-3 {
   overflow: visible !important;
 }
+
+/* Google Places Autocomplete dropdown */
+.pac-container {
+  z-index: 10000 !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-family: inherit;
+}
+.pac-item {
+  padding: 10px 16px;
+  cursor: pointer;
+}
+.pac-item:hover {
+  background-color: #f5f5f5;
+}
