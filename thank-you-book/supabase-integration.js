@@ -71,22 +71,87 @@ console.log('🎉 Thank you page loaded - UID:', uid, 'Session:', sessionId);
         // 3. Send all data to n8n webhook
         console.log('📤 Sending data to n8n webhook...');
         
+        // Map quiz answers to readable format
+        const quizAnswers = [];
+        
+        // Question: Gender
+        if (userData.genre) {
+            quizAnswers.push({
+                question: "What's your gender?",
+                answer: userData.genre.charAt(0).toUpperCase() + userData.genre.slice(1)
+            });
+        }
+        
+        // Question: Relationship Status
+        if (userData.single !== null || userData.single !== undefined) {
+            const statusText = userData.single ? 'Single' : 'In a relationship';
+            const statusEmoji = {
+                'Single': '💔 Single',
+                'In a relationship': '💕 In a relationship'
+            };
+            
+            quizAnswers.push({
+                question: "What's your relationship status?",
+                answer: statusEmoji[statusText] || statusText
+            });
+        }
+        
+        // Question: Main Goal (stored in answer_question)
+        if (userData.answer_question) {
+            const goalMap = {
+                'Life path': '🧭 Discover my life path & purpose',
+                'Self understanding': '🚀 Understand myself better',
+                'Relationships': '💞 Improve my relationships',
+                'Career': '💼 Get career guidance',
+                'Spiritual growth': '🌸 Grow spiritually',
+                'Happiness': '😊 Find happiness & inner peace'
+            };
+            
+            quizAnswers.push({
+                question: "What's your main goal right now?",
+                answer: goalMap[userData.answer_question] || userData.answer_question
+            });
+        }
+        
+        // Question: Logic vs Emotions (stored in answer_answer)
+        if (userData.answer_answer) {
+            const mindsetMap = {
+                'Logic': '🧠 Logic',
+                'Emotions': '❤️ Emotions',
+                'Both': '⚖️ A bit of both'
+            };
+            
+            quizAnswers.push({
+                question: "Do you act more on logic or emotions?",
+                answer: mindsetMap[userData.answer_answer] || userData.answer_answer
+            });
+        }
+
         const webhookPayload = {
             // User data from database
             user_id: userData.user_id,
             email: userData.email,
             first_name: userData.first_name,
             last_name: userData.last_name,
+            full_name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
             date_birth: userData.date_birth,
             birth_time: userData.hcur_min_am,
             place_of_birth: userData.place_of_birth,
             place_birth_coordinates: userData.place_birth_coordonate,
             sun_sign: userData.sun_sign,
             gender: userData.genre,
-            single: userData.single,
-            relationship_goal: userData.answer_question,
-            mindset: userData.answer_answer,
-            cover_color: userData.color_book,
+            
+            // Quiz answers (human-readable)
+            quiz_answers: quizAnswers,
+            
+            // Raw database values (for reference)
+            raw_data: {
+                single: userData.single,
+                relationship_goal: userData.answer_question,
+                mindset: userData.answer_answer,
+                cover_color: userData.color_book
+            },
+            
             variant: userData.variant,
             
             // Stripe data
