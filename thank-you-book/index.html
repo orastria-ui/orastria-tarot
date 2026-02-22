@@ -192,6 +192,7 @@ src="https://www.facebook.com/tr?id=1196585509341329&ev=PageView&noscript=1"
 </footer>
 
 <script src="../user-tracking.js"></script>
+<script src="supabase-integration.js"></script>
 <script>
 // ── Name personalisation ─────────────────────────────────────
 const params = new URLSearchParams(window.location.search);
@@ -204,6 +205,14 @@ if (name) {
 }
 
 console.log('✓ Thank you page loaded, user:', name || 'friend');
+
+// ── Track purchase in Supabase ───────────────────────────────
+// Wait for tracking scripts to initialize
+setTimeout(() => {
+  if (window.orastriaTracking) {
+    window.orastriaTracking.trackPurchase();
+  }
+}, 1000);
 
 // ── Animated checkmark on load ───────────────────────────────
 window.addEventListener('load', () => {

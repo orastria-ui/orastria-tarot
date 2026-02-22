@@ -62,15 +62,20 @@ function personalizeCheckout() {
 
 // ── CHECKOUT HANDLERS ─────────────────────────────────────────
 
-document.getElementById('co-checkout-btn').addEventListener('click', () => {
+document.getElementById('co-checkout-btn').addEventListener('click', async () => {
   const userData = getUserData();
+  
+  // Track add-to-cart event in Supabase
+  if (window.orastriaTracking) {
+    await window.orastriaTracking.trackAddToCart();
+  }
   
   // TODO: Replace with real payment URL (Stripe/Whop)
   const checkoutUrl = `https://checkout.example.com?uid=${userData.uid}&name=${encodeURIComponent(userData.name)}`;
   
   console.log('Checkout clicked:', checkoutUrl);
   
-  // Track conversion event
+  // Track conversion event in Facebook Pixel
   if (window.fbq) {
     window.fbq('track', 'InitiateCheckout', {
       value: 7.99,
