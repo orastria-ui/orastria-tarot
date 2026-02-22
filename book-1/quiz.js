@@ -520,3 +520,36 @@ function initPlacesAutocomplete() {
     }
   });
 }
+
+// Checkout function with Meta tracking
+function initiateCheckout() {
+  // Get UID from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const uid = urlParams.get('uid') || 'unknown';
+  
+  // Fire Meta InitiateCheckout event
+  if (typeof fbq !== 'undefined') {
+    fbq('track', 'InitiateCheckout', {
+      content_name: 'Astrology Book',
+      content_category: 'book',
+      value: 24.99,
+      currency: 'USD'
+    });
+  }
+  
+  // Redirect to Stripe checkout with UID
+  // TODO: Replace with actual Stripe checkout URL or session creation
+  const checkoutUrl = `https://orastria-api.orastria.workers.dev/checkout?uid=${uid}`;
+  window.location.href = checkoutUrl;
+}
+
+// Free book only (no purchase)
+function sendFreeBookOnly() {
+  if (typeof fbq !== 'undefined') {
+    fbq('track', 'Lead', {
+      content_name: 'Free Astrology Book',
+      content_category: 'book'
+    });
+  }
+  alert('Your free book will be sent to your email!');
+}
