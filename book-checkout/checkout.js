@@ -141,26 +141,35 @@ async function personalizeCheckout() {
 
 // ── CHECKOUT HANDLERS ─────────────────────────────────────────
 
-document.getElementById('co-checkout-btn').addEventListener('click', async () => {
+document.getElementById('co-checkout-btn').addEventListener('click', () => {
   const userData = getUserData();
   
-  // Track in Supabase
-  if (window.orastriaTracking) {
-    await window.orastriaTracking.trackAddToCart();
+  // Track in Supabase (fire-and-forget, don't block redirect)
+  try {
+    if (window.orastriaTracking) {
+      window.orastriaTracking.trackAddToCart();
+    }
+  } catch(e) {
+    console.warn('Tracking error:', e);
   }
   
-  // Track InitiateCheckout in Meta Pixel
-  if (window.fbq) {
-    window.fbq('track', 'InitiateCheckout', {
-      value: 24.99,
-      currency: 'USD',
-      content_name: 'Orastria Full Book'
-    });
-  }
+  // Track InitiateCheckout in Meta Pixel (fire-and-forget)
+  try {
+    if (window.fbq) {
+      window.fbq('track', 'InitiateCheckout', {
+        value: 7.99,
+        currency: 'EUR',
+        content_name: 'Orastria Full Book'
+      });
+    }
+  } catch(e) {}
   
-  // Redirect to Stripe checkout via Worker
-  const checkoutUrl = `https://api.orastria.org/checkout/remarketing?uid=${encodeURIComponent(userData.uid)}&email=${encodeURIComponent(userData.email)}&name=${encodeURIComponent(userData.name)}`;
-  window.location.href = checkoutUrl;
+  // Redirect directly to Stripe Payment Link (bypasses Worker completely)
+  const stripePaymentLink = 'https://buy.stripe.com/dRmbJ188V6dEc7G76C2sM0y';
+  const checkoutUrl = stripePaymentLink + '?client_reference_id=' + encodeURIComponent(userData.uid) + '&prefilled_email=' + encodeURIComponent(userData.email);
+  
+  console.log('→ REDIRECTING TO STRIPE:', checkoutUrl);
+  window.location.replace(checkoutUrl);
 });
 
 document.getElementById('co-skip-btn').addEventListener('click', () => {
