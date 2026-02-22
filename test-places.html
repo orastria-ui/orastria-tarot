@@ -36,7 +36,7 @@
       
       debounce = setTimeout(async () => {
         try {
-          const url = `https://orastria-api.orastria.workers.dev/places?input=${encodeURIComponent(query)}`;
+          const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?key=AIzaSyBaSDJ2ePU18U-WCo3mVaPQyeB-DwalJMU&types=(cities)&input=${encodeURIComponent(query)}`;
           log.textContent = 'Fetching: ' + url;
           
           const response = await fetch(url);

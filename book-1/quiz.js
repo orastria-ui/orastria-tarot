@@ -141,7 +141,7 @@ function initPlacesAutocomplete() {
 
     debounceTimer = setTimeout(async () => {
       try {
-        const response = await fetch(`https://orastria-api.orastria.workers.dev/places?input=${encodeURIComponent(query)}`);
+        const response = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?key=AIzaSyBaSDJ2ePU18U-WCo3mVaPQyeB-DwalJMU&types=(cities)&input=${encodeURIComponent(query)}`);
         const data = await response.json();
 
         if (data.status === 'OK' && data.predictions && data.predictions.length > 0) {
