@@ -21,28 +21,46 @@ function getUserData() {
 }
 
 async function fetchUserFromDB(uid) {
-  if (!uid) return null;
+  if (!uid) {
+    console.log('⚠️ No UID provided to fetchUserFromDB');
+    return null;
+  }
+  
+  console.log('→ Fetching user from database for UID:', uid);
   
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/orastria_submissions?user_id=eq.${uid}`, {
+    const url = `${SUPABASE_URL}/rest/v1/orastria_submissions?user_id=eq.${uid}`;
+    console.log('→ Query URL:', url);
+    
+    const response = await fetch(url, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
       }
     });
     
+    console.log('← Response status:', response.status);
+    
     if (!response.ok) {
-      console.warn('Failed to fetch user from DB:', response.status);
+      console.error('❌ Failed to fetch user from DB:', response.status, response.statusText);
       return null;
     }
     
     const data = await response.json();
+    console.log('← Response data:', data.length, 'records found');
+    
     if (data && data.length > 0) {
       const user = data[0];
-      console.log('✓ User data fetched from database:', user);
+      console.log('✓ User record:', {
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        sun_sign: user.sun_sign
+      });
       
       // Build full name
       const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'friend';
+      console.log('→ Built full name:', fullName);
       
       // Store in localStorage for future visits
       if (user.email) localStorage.setItem('orastria_email', user.email);
@@ -59,9 +77,10 @@ async function fetchUserFromDB(uid) {
       };
     }
     
+    console.warn('⚠️ No records found for UID:', uid);
     return null;
   } catch (error) {
-    console.error('Error fetching user from DB:', error);
+    console.error('❌ Exception fetching user from DB:', error);
     return null;
   }
 }
@@ -78,32 +97,50 @@ function formatDate(dobString) {
 }
 
 async function personalizeCheckout() {
+  console.log('━━━ PERSONALIZING CHECKOUT ━━━');
   const userData = getUserData();
+  console.log('Initial userData:', userData);
   
   // If we have a UID but no name, try to fetch from database
   if (userData.uid && userData.name === 'friend') {
+    console.log('→ Name is "friend", attempting database lookup...');
     const dbUser = await fetchUserFromDB(userData.uid);
     if (dbUser) {
+      console.log('✓ Database user found, merging data');
       Object.assign(userData, dbUser);
+    } else {
+      console.warn('⚠️ Database lookup returned null');
     }
+  } else {
+    console.log('→ Skipping database lookup (UID:', userData.uid, '| name:', userData.name + ')');
   }
   
-  console.log('✓ Checkout personalization:', userData);
+  console.log('Final userData:', userData);
   
   const nameEl = document.getElementById('co-name');
-  if (nameEl && userData.name) nameEl.textContent = userData.name;
+  if (nameEl) {
+    console.log('→ Updating page title name to:', userData.name);
+    nameEl.textContent = userData.name;
+  } else {
+    console.error('❌ Element #co-name not found!');
+  }
   
   const coverNameEl = document.getElementById('co-cover-name');
   if (coverNameEl && userData.name) {
-    coverNameEl.textContent = userData.name.split(' ')[0];
+    const firstName = userData.name.split(' ')[0];
+    console.log('→ Updating book cover name to:', firstName);
+    coverNameEl.textContent = firstName;
   }
   
   const coverDateEl = document.getElementById('co-cover-date');
   if (coverDateEl && userData.dob) {
-    coverDateEl.textContent = formatDate(userData.dob);
+    const formattedDate = formatDate(userData.dob);
+    console.log('→ Updating book cover date to:', formattedDate);
+    coverDateEl.textContent = formattedDate;
   }
   
   window.checkoutUserData = userData;
+  console.log('━━━ PERSONALIZATION COMPLETE ━━━');
 }
 
 // ── CHECKOUT HANDLERS ─────────────────────────────────────────
