@@ -26,6 +26,7 @@ async function submitToOrastriaDB(formData) {
         const { data, error } = await window.supabaseClient
             .from('orastria_submissions')
             .insert([{
+                user_id: window.orastriaUID || null,
                 email: formData.email || null,
                 first_name: formData.firstName || null,
                 last_name: formData.lastName || null,
