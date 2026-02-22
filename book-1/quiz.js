@@ -392,10 +392,14 @@ async function submitEmail() {
   const timeStr = (state.birthTime && state.birthTime !== 'Unknown') ? state.birthTime : '12:00 pm';
   const birthDateFormatted = `${monthNames[state.dob.month-1]} ${state.dob.day}, ${state.dob.year} ${timeStr}`;
   
+  // Get user UUID from tracking system
+  const userId = window.orastriaUID || localStorage.getItem('orastria_uid') || null;
+  
   const webhookPromise = fetch('https://ismypartner.app.n8n.cloud/webhook/20a6c1c6-df2e-4d43-a19b-4daa65017850', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      user_id: userId, // Unique user ID from tracking system
       tracker_id: Date.now() + 'x' + Math.random().toString(36).substr(2,9),
       email: state.email,
       first_name: state.name.split(' ')[0] || state.name,
@@ -407,10 +411,15 @@ async function submitEmail() {
       genre: state.gender || '',
       single: state.status === 'single' ? 'Yes' : 'No',
       color_book: state.coverColor || '#1a1a2e',
+      zodiac: state.zodiac || '', // Include zodiac sign
+      goal: state.goal || '', // Include life goal
+      mindset: state.mindset || '', // Include mindset
+      love_language: state.loveLanguage || '', // Include love language
+      includes: state.includes.join(', ') || '', // Include book topics
       all_question: 'Gender, Date of Birth, Birth Time, Birth Place, Relationship Status, Life Goal, Mindset, Love Language, Book Includes',
       all_response: [state.gender, birthDateFormatted, state.birthTime, state.birthPlace, state.status, state.goal, state.mindset, state.loveLanguage, state.includes.join(', ')].join(', ')
     })
-  }).then(r => r.ok ? console.log('✓ Free book webhook triggered') : console.error('Webhook failed:', r.status))
+  }).then(r => r.ok ? console.log('✓ Free book webhook triggered (user_id:', userId + ')') : console.error('Webhook failed:', r.status))
     .catch(e => console.error('Webhook error:', e));
 
   // Wait for both to complete (non-blocking for user experience)
