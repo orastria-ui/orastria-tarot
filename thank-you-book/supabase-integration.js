@@ -1,18 +1,15 @@
 // Supabase Integration for Orastria Book-1
-// Load Supabase client from CDN
 const SUPABASE_URL = 'https://bkxgpjxfexndjwawaiph.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_qw9JxZ0SwYY5s_yOOylcgg_BWF2FnQ7';
 
-// Load Supabase library
-(function loadSupabase() {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-    script.onload = () => {
+// Initialize Supabase client (script already loaded in HTML)
+(function initSupabase() {
+    if (typeof supabase !== 'undefined') {
         window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log('✓ Supabase connected to Orastria database');
-    };
-    script.onerror = () => console.error('Failed to load Supabase');
-    document.head.appendChild(script);
+    } else {
+        console.error('Supabase library not loaded - check script tag in HTML');
+    }
 })();
 
 // Get user IP
