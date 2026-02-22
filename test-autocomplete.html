@@ -53,7 +53,7 @@ input.addEventListener('input', async (e) => {
     addLog('Fetching from API...');
     
     try {
-      const url = `https://orastria-api.orastria.workers.dev/places?input=${encodeURIComponent(query)}&types=(cities)`;
+      const url = `https://api.orastria.org/places?input=${encodeURIComponent(query)}&types=(cities)`;
       addLog(`URL: ${url}`);
       
       const controller = new AbortController();

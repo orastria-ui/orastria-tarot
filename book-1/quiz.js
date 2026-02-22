@@ -542,7 +542,7 @@ function initiateCheckout() {
   }
   
   // Try Worker first, fallback to direct Stripe link
-  const workerUrl = `https://orastria-api.orastria.workers.dev/checkout?uid=${encodeURIComponent(uid)}&email=${encodeURIComponent(email)}`;
+  const workerUrl = `https://api.orastria.org/checkout?uid=${encodeURIComponent(uid)}&email=${encodeURIComponent(email)}`;
   
   // Use a simple redirect - if Worker fails, browser will show error
   // User can retry or we can add fallback
