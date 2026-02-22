@@ -2,6 +2,10 @@
  * Orastria Checkout - Personalization & CTA handlers
  */
 
+// ── SUPABASE CONFIG ───────────────────────────────────────────
+const SUPABASE_URL = 'https://bkxgpjxfexndjwawaiph.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_qw9JxZ0SwYY5s_yOOylcgg_BWF2FnQ7';
+
 // ── PERSONALIZATION ───────────────────────────────────────────
 
 function getUserData() {
@@ -16,6 +20,52 @@ function getUserData() {
   };
 }
 
+async function fetchUserFromDB(uid) {
+  if (!uid) return null;
+  
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/orastria_submissions?user_id=eq.${uid}`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+    
+    if (!response.ok) {
+      console.warn('Failed to fetch user from DB:', response.status);
+      return null;
+    }
+    
+    const data = await response.json();
+    if (data && data.length > 0) {
+      const user = data[0];
+      console.log('✓ User data fetched from database:', user);
+      
+      // Build full name
+      const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'friend';
+      
+      // Store in localStorage for future visits
+      if (user.email) localStorage.setItem('orastria_email', user.email);
+      if (fullName !== 'friend') localStorage.setItem('orastria_name', fullName);
+      if (user.date_birth) localStorage.setItem('orastria_dob', user.date_birth);
+      if (user.sun_sign) localStorage.setItem('orastria_zodiac', user.sun_sign);
+      
+      return {
+        name: fullName,
+        email: user.email || '',
+        dob: user.date_birth || '',
+        zodiac: user.sun_sign || '',
+        uid: uid
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching user from DB:', error);
+    return null;
+  }
+}
+
 function formatDate(dobString) {
   if (!dobString) return 'Jan 1, 1990';
   try {
@@ -27,8 +77,17 @@ function formatDate(dobString) {
   }
 }
 
-function personalizeCheckout() {
+async function personalizeCheckout() {
   const userData = getUserData();
+  
+  // If we have a UID but no name, try to fetch from database
+  if (userData.uid && userData.name === 'friend') {
+    const dbUser = await fetchUserFromDB(userData.uid);
+    if (dbUser) {
+      Object.assign(userData, dbUser);
+    }
+  }
+  
   console.log('✓ Checkout personalization:', userData);
   
   const nameEl = document.getElementById('co-name');
