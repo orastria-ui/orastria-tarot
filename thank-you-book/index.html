@@ -1,23 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Meta Pixel Code -->
+<!-- Meta Pixel Code with Advanced Matching -->
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1196585509341329');
-fbq('track', 'PageView');
-fbq('track', 'Purchase', {
-  value: 7.99,
-  currency: 'EUR',
-  content_name: 'Orastria Full Book'
-});
+// SHA256 hash function for email
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Get tracking data
+const urlParams = new URLSearchParams(window.location.search);
+const uid = urlParams.get('uid') || localStorage.getItem('orastria_uid') || '';
+const fbclid = localStorage.getItem('orastria_fbclid') || urlParams.get('fbclid') || '';
+const storedEmail = localStorage.getItem('orastria_email') || '';
+
+// Initialize pixel with advanced matching when data is ready
+(async function() {
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+
+  // Build advanced matching object
+  const advancedMatching = {};
+  if (uid) advancedMatching.external_id = uid;
+  if (fbclid) advancedMatching.fbc = 'fb.1.' + Date.now() + '.' + fbclid;
+  if (storedEmail) {
+    const emailHash = await sha256(storedEmail.toLowerCase().trim());
+    advancedMatching.em = emailHash;
+  }
+
+  console.log('📊 Meta Pixel init with:', advancedMatching);
+
+  // Init with advanced matching
+  fbq('init', '1196585509341329', advancedMatching);
+  fbq('track', 'PageView');
+  fbq('track', 'Purchase', {
+    value: 7.99,
+    currency: 'EUR',
+    content_name: 'Orastria Full Book',
+    content_type: 'product',
+    content_ids: ['orastria-book']
+  });
+
+  console.log('✅ Purchase event fired: €7.99');
+})();
 </script>
 <noscript><img height="1" width="1" style="display:none"
 src="https://www.facebook.com/tr?id=1196585509341329&ev=PageView&noscript=1"

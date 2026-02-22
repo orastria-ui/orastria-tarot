@@ -366,6 +366,9 @@ async function submitEmail() {
   if (!e || !e.includes('@')) { shakeInput('user-email'); return; }
   state.email = e;
 
+  // Store email for Meta tracking
+  if (window.storeEmail) window.storeEmail(e);
+
   console.log('Quiz complete — user data:', state);
   
   // Submit to Supabase database

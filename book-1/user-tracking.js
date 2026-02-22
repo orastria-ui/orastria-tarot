@@ -79,6 +79,25 @@ async function trackPageView(uid) {
   }
 }
 
+// Capture fbclid from URL and store it
+function captureFbclid() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const fbclid = urlParams.get('fbclid');
+  
+  if (fbclid) {
+    localStorage.setItem('orastria_fbclid', fbclid);
+    console.log('✓ fbclid captured:', fbclid.substring(0, 20) + '...');
+  }
+}
+
+// Store email when captured (call this from quiz)
+function storeEmail(email) {
+  if (email) {
+    localStorage.setItem('orastria_email', email.toLowerCase().trim());
+    console.log('✓ Email stored for tracking');
+  }
+}
+
 // Initialize on page load
 (function initUserTracking() {
   const uid = getUserID();
@@ -86,9 +105,14 @@ async function trackPageView(uid) {
   // Store globally for use in other scripts
   window.orastriaUID = uid;
 
+  // Capture fbclid if present
+  captureFbclid();
+
   // Track page view after Supabase loads
   setTimeout(() => trackPageView(uid), 1000);
 })();
 
 // Export for use in other scripts
 window.getUserID = getUserID;
+window.storeEmail = storeEmail;
+window.captureFbclid = captureFbclid;
