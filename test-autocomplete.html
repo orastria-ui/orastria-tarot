@@ -56,21 +56,32 @@ input.addEventListener('input', async (e) => {
       const url = `https://orastria-api.orastria.workers.dev/places?input=${encodeURIComponent(query)}&types=(cities)`;
       addLog(`URL: ${url}`);
       
-      const response = await fetch(url);
-      addLog(`Response status: ${response.status}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       
-      const data = await response.json();
-      addLog(`Response data: ${JSON.stringify(data).substring(0, 200)}...`);
+      addLog('Calling fetch...');
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      addLog(`Response received! Status: ${response.status}`);
+      addLog(`Response headers: ${JSON.stringify([...response.headers])}`);
+      
+      const text = await response.text();
+      addLog(`Response text (first 300 chars): ${text.substring(0, 300)}`);
+      
+      const data = JSON.parse(text);
+      addLog(`Parsed JSON successfully`);
 
       if (data.status === 'OK' && data.predictions && data.predictions.length > 0) {
         addLog(`Got ${data.predictions.length} predictions`);
         renderDropdown(data.predictions);
       } else {
-        addLog('No predictions or bad status');
+        addLog(`No predictions. Status: ${data.status || 'undefined'}`);
         dropdown.style.display = 'none';
       }
     } catch (error) {
-      addLog(`ERROR: ${error.message}`);
+      addLog(`ERROR: ${error.name}: ${error.message}`);
+      addLog(`Stack: ${error.stack}`);
       dropdown.style.display = 'none';
     }
   }, 300);
