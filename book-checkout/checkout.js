@@ -183,7 +183,7 @@ document.getElementById('co-skip-btn').addEventListener('click', () => {
   }
   
   // Redirect to free book confirmation
-  window.location.href = `/thank-you-book?uid=${userData.uid}&free=true`;
+  window.location.href = `/thank-you-book?uid=${userData.uid}&name=${encodeURIComponent(userData.name)}&free=true`;
 });
 
 // ── CAROUSEL ANIMATION ────────────────────────────────────────
