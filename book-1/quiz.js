@@ -515,47 +515,42 @@ async function submitEmail() {
       window.history.replaceState({}, '', url);
       
       console.log('→ Session UID updated to database ID:', dbID);
+      
+      // Send to n8n webhook AFTER database insert (uses new database ID)
+      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const timeStr = (state.birthTime && state.birthTime !== 'Unknown') ? state.birthTime : '12:00 pm';
+      const birthDateFormatted = `${monthNames[state.dob.month-1]} ${state.dob.day}, ${state.dob.year} ${timeStr}`;
+      
+      return fetch('https://ismypartner.app.n8n.cloud/webhook/20a6c1c6-df2e-4d43-a19b-4daa65017850', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: dbID, // Use new database ID
+          tracker_id: Date.now() + 'x' + Math.random().toString(36).substr(2,9),
+          email: state.email,
+          first_name: state.name.split(' ')[0] || state.name,
+          last_name: state.name.split(' ').slice(1).join(' ') || '',
+          date_of_birth: birthDateFormatted,
+          hour_birth: timeStr,
+          place_of_birth: state.birthPlace || '',
+          place_coordonates: '', // Would need lat/lng from Google Places
+          genre: state.gender || '',
+          single: state.status === 'single' ? 'Yes' : 'No',
+          color_book: state.coverColor || '#1a1a2e',
+          zodiac: state.zodiac || '', // Include zodiac sign
+          goal: state.goal || '', // Include life goal
+          mindset: state.mindset || '', // Include mindset
+          love_language: state.loveLanguage || '', // Include love language
+          includes: state.includes.join(', ') || '', // Include book topics
+          all_question: 'Gender, Date of Birth, Birth Time, Birth Place, Relationship Status, Life Goal, Mindset, Love Language, Book Includes',
+          all_response: [state.gender, birthDateFormatted, state.birthTime, state.birthPlace, state.status, state.goal, state.mindset, state.loveLanguage, state.includes.join(', ')].join(', ')
+        })
+      }).then(r => r.ok ? console.log('✓ n8n webhook sent with database ID:', dbID) : console.error('Webhook failed:', r.status))
+        .catch(e => console.error('Webhook error:', e));
     } else {
       console.error('DB error:', r.error);
     }
   }) : Promise.resolve();
-
-  // Send to n8n webhook (matching old Bubble format)
-  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const timeStr = (state.birthTime && state.birthTime !== 'Unknown') ? state.birthTime : '12:00 pm';
-  const birthDateFormatted = `${monthNames[state.dob.month-1]} ${state.dob.day}, ${state.dob.year} ${timeStr}`;
-  
-  // userId already defined above
-  
-  const webhookPromise = fetch('https://ismypartner.app.n8n.cloud/webhook/20a6c1c6-df2e-4d43-a19b-4daa65017850', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      user_id: userId, // Unique user ID from tracking system
-      tracker_id: Date.now() + 'x' + Math.random().toString(36).substr(2,9),
-      email: state.email,
-      first_name: state.name.split(' ')[0] || state.name,
-      last_name: state.name.split(' ').slice(1).join(' ') || '',
-      date_of_birth: birthDateFormatted,
-      hour_birth: timeStr,
-      place_of_birth: state.birthPlace || '',
-      place_coordonates: '', // Would need lat/lng from Google Places
-      genre: state.gender || '',
-      single: state.status === 'single' ? 'Yes' : 'No',
-      color_book: state.coverColor || '#1a1a2e',
-      zodiac: state.zodiac || '', // Include zodiac sign
-      goal: state.goal || '', // Include life goal
-      mindset: state.mindset || '', // Include mindset
-      love_language: state.loveLanguage || '', // Include love language
-      includes: state.includes.join(', ') || '', // Include book topics
-      all_question: 'Gender, Date of Birth, Birth Time, Birth Place, Relationship Status, Life Goal, Mindset, Love Language, Book Includes',
-      all_response: [state.gender, birthDateFormatted, state.birthTime, state.birthPlace, state.status, state.goal, state.mindset, state.loveLanguage, state.includes.join(', ')].join(', ')
-    })
-  }).then(r => r.ok ? console.log('✓ Free book webhook triggered (user_id:', userId + ')') : console.error('Webhook failed:', r.status))
-    .catch(e => console.error('Webhook error:', e));
-
-  // Wait for both to complete (non-blocking for user experience)
-  Promise.all([dbPromise, webhookPromise]);
 
   startLoading();
 }
