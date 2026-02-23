@@ -477,10 +477,20 @@ async function submitEmail() {
   }).then(r => {
     if (r.success) {
       console.log('✓ DB saved:', r.data.id);
-      // Create Klaviyo profile after DB save
+      // Create Klaviyo profile after DB save (with all custom properties)
       if (window.createKlaviyoProfile) {
         const uid = window.orastriaUID || localStorage.getItem('orastria_uid');
-        window.createKlaviyoProfile(state.email, state.name.split(' ')[0] || state.name, uid);
+        window.createKlaviyoProfile(state.email, state.name.split(' ')[0] || state.name, uid, {
+          zodiac: state.zodiac,
+          gender: state.gender,
+          status: state.status,
+          goal: state.goal,
+          mindset: state.mindset,
+          loveLanguage: state.loveLanguage,
+          birthDate: `${state.dob.year}-${String(state.dob.month).padStart(2,'0')}-${String(state.dob.day).padStart(2,'0')}`,
+          birthPlace: state.birthPlace,
+          coverColor: state.coverColor
+        });
       }
     } else {
       console.error('DB error:', r.error);

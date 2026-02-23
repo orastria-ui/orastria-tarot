@@ -78,17 +78,31 @@ async function submitToOrastriaDB(formData) {
     }
 }
 
-// Create Klaviyo profile and subscribe to list
-async function createKlaviyoProfile(email, firstName, uid) {
+// Create Klaviyo profile and subscribe to list (with custom properties)
+async function createKlaviyoProfile(email, firstName, uid, customProps = {}) {
     try {
         const res = await fetch('https://orastria-api.orastria.workers.dev/klaviyo/profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, firstName, uid })
+            body: JSON.stringify({ 
+                email, 
+                firstName, 
+                uid,
+                // Custom properties for Klaviyo
+                zodiac: customProps.zodiac || null,
+                gender: customProps.gender || null,
+                status: customProps.status || null,
+                goal: customProps.goal || null,
+                mindset: customProps.mindset || null,
+                loveLanguage: customProps.loveLanguage || null,
+                birthDate: customProps.birthDate || null,
+                birthPlace: customProps.birthPlace || null,
+                coverColor: customProps.coverColor || null
+            })
         });
         const data = await res.json();
         if (data.success) {
-            console.log('✓ Klaviyo profile created:', data.klaviyo_id);
+            console.log('✓ Klaviyo profile created:', data.klaviyo_id, '| Props:', Object.keys(customProps).length);
             return data.klaviyo_id;
         } else {
             console.error('Klaviyo error:', data.error);

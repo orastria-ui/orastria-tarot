@@ -32,3 +32,23 @@ Remove the following from quiz.js:
 - Line in initiateCheckout() that calls saveStateBeforeCheckout()
 
 ---
+
+## 2026-02-23 13:15 - Fix: Send custom properties to Klaviyo
+**By:** Asterix
+**Issue:** Klaviyo profiles were created without custom properties (zodiac, status, goal, etc.)
+**Solution:** Pass all quiz data to createKlaviyoProfile function
+
+### Changes Made:
+
+#### 1. quiz.js - Modified createKlaviyoProfile call
+**Before:** `createKlaviyoProfile(email, firstName, uid)`
+**After:** `createKlaviyoProfile(email, firstName, uid, { zodiac, gender, status, goal, mindset, ... })`
+
+#### 2. supabase-integration.js - Updated createKlaviyoProfile function
+**Before:** Only accepted email, firstName, uid
+**After:** Accepts 4th param `customProps` and sends all fields to Worker
+
+### Next step needed:
+Worker `orastria-api` needs to be updated to accept and forward these custom properties to Klaviyo API.
+
+---
