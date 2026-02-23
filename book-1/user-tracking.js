@@ -98,6 +98,57 @@ function storeEmail(email) {
   }
 }
 
+// Resolve session UID: Migrate old user_id-based URLs to database id
+async function resolveSessionUID() {
+  const params = new URLSearchParams(window.location.search);
+  const uid = params.get('uid');
+  
+  if (!uid || !window.supabaseClient) return; // No uid or Supabase not ready
+  
+  try {
+    // First, check if this uid matches an actual `id` in the DB (already correct)
+    const { data: byId, error: idError } = await window.supabaseClient
+      .from('orastria_submissions')
+      .select('id')
+      .eq('id', uid)
+      .maybeSingle();
+    
+    if (byId) {
+      console.log('✓ UID is already a valid database ID');
+      return; // UID is already correct
+    }
+    
+    // If not found by `id`, try looking up by `user_id` (old format)
+    const { data: byUserId, error: userIdError } = await window.supabaseClient
+      .from('orastria_submissions')
+      .select('id')
+      .eq('user_id', uid)
+      .order('created_at', { ascending: false }) // Take most recent if duplicates
+      .limit(1)
+      .maybeSingle();
+    
+    if (byUserId) {
+      console.log('→ Migrating old user_id to database ID:', byUserId.id);
+      
+      // Update localStorage and global variable
+      localStorage.setItem('orastria_uid', byUserId.id);
+      window.orastriaUID = byUserId.id;
+      
+      // Redirect to correct URL
+      params.set('uid', byUserId.id);
+      const newURL = `${window.location.pathname}?${params.toString()}`;
+      window.location.replace(newURL); // replace so it doesn't add to browser history
+      return;
+    }
+    
+    // If neither found, uid is unresolvable (NULL or corrupted entry)
+    console.warn('⚠️  UID not found in database (by id or user_id):', uid);
+    
+  } catch (err) {
+    console.error('Session UID resolution error:', err);
+  }
+}
+
 // Initialize on page load
 (function initUserTracking() {
   const uid = getUserID();
@@ -108,8 +159,13 @@ function storeEmail(email) {
   // Capture fbclid if present
   captureFbclid();
 
-  // Track page view after Supabase loads
-  setTimeout(() => trackPageView(uid), 1000);
+  // Resolve session UID (migrate old user_id-based URLs) after Supabase loads
+  setTimeout(() => {
+    resolveSessionUID().then(() => {
+      // Track page view after migration completes
+      trackPageView(window.orastriaUID || uid);
+    });
+  }, 1000);
 })();
 
 // Export for use in other scripts

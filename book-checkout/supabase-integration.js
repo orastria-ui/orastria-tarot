@@ -28,7 +28,7 @@ async function trackConversion(uid, field) {
   }
 
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/orastria_submissions?user_id=eq.${uid}`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/orastria_submissions?id=eq.${uid}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

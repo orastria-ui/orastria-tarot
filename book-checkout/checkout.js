@@ -25,7 +25,7 @@ async function fetchUserFromDB(uid) {
   console.log('→ Fetching user from database for UID:', uid);
   
   try {
-    const url = `${window.SUPABASE_URL}/rest/v1/orastria_submissions?user_id=eq.${uid}`;
+    const url = `${window.SUPABASE_URL}/rest/v1/orastria_submissions?id=eq.${uid}`;
     console.log('→ Query URL:', url);
     
     const response = await fetch(url, {

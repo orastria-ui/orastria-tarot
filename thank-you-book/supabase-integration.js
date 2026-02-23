@@ -22,7 +22,7 @@ console.log('🎉 Thank you page loaded - UID:', uid, 'Session:', sessionId);
         
         // 1. Fetch user data from Supabase
         const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/orastria_submissions?user_id=eq.${uid}&select=*`,
+            `${SUPABASE_URL}/rest/v1/orastria_submissions?id=eq.${uid}&select=*`,
             {
                 headers: {
                     'apikey': SUPABASE_ANON_KEY,
@@ -45,7 +45,7 @@ console.log('🎉 Thank you page loaded - UID:', uid, 'Session:', sessionId);
         console.log('📝 Updating buy status to "yes"...');
         
         const updateResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/orastria_submissions?user_id=eq.${uid}`,
+            `${SUPABASE_URL}/rest/v1/orastria_submissions?id=eq.${uid}`,
             {
                 method: 'PATCH',
                 headers: {

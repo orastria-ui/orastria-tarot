@@ -502,7 +502,19 @@ async function submitEmail() {
     coverColor: state.coverColor
   }).then(r => {
     if (r.success) {
-      console.log('✓ DB saved:', r.data.id);
+      const dbID = r.data.id;
+      console.log('✓ DB saved:', dbID);
+      
+      // UPDATE SESSION UID: Use database ID instead of client-generated UUID
+      window.orastriaUID = dbID;
+      localStorage.setItem('orastria_uid', dbID);
+      
+      // Update URL without reload
+      const url = new URL(window.location);
+      url.searchParams.set('uid', dbID);
+      window.history.replaceState({}, '', url);
+      
+      console.log('→ Session UID updated to database ID:', dbID);
     } else {
       console.error('DB error:', r.error);
     }
