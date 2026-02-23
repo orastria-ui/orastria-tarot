@@ -52,3 +52,22 @@ Remove the following from quiz.js:
 Worker `orastria-api` needs to be updated to accept and forward these custom properties to Klaviyo API.
 
 ---
+
+## 2026-02-23 13:35 - Fix: Klaviyo call independent from Supabase
+**By:** Asterix
+**Issue:** Klaviyo was only called if Supabase succeeded. If Supabase failed, users never got subscribed.
+**Solution:** Call Klaviyo FIRST and INDEPENDENTLY from Supabase
+
+### Changes Made:
+
+#### quiz.js - Restructured submitEmail()
+**Before:** Klaviyo called inside Supabase `.then()` block
+**After:** Klaviyo called FIRST, independently, then Supabase runs separately
+
+### Flow now:
+1. User enters email
+2. → Klaviyo: create profile + set properties + SUBSCRIBE (always runs)
+3. → Supabase: save to database (runs independently)
+4. → n8n webhook (runs independently)
+
+---

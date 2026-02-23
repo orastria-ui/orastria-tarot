@@ -459,8 +459,34 @@ async function submitEmail() {
   if (window.storeEmail) window.storeEmail(e);
 
   console.log('Quiz complete — user data:', state);
-  
-  // Submit to Supabase database
+
+  // Get user UUID
+  const userId = window.orastriaUID || localStorage.getItem('orastria_uid') || null;
+
+  // ═══════════════════════════════════════════════════════════════════
+  // 1. KLAVIYO - Create/update profile AND subscribe (ALWAYS runs first)
+  // ═══════════════════════════════════════════════════════════════════
+  if (window.createKlaviyoProfile) {
+    window.createKlaviyoProfile(state.email, state.name.split(' ')[0] || state.name, userId, {
+      zodiac: state.zodiac,
+      gender: state.gender,
+      status: state.status,
+      goal: state.goal,
+      mindset: state.mindset,
+      loveLanguage: state.loveLanguage,
+      birthDate: `${state.dob.year}-${String(state.dob.month).padStart(2,'0')}-${String(state.dob.day).padStart(2,'0')}`,
+      birthPlace: state.birthPlace,
+      coverColor: state.coverColor
+    }).then(klaviyoId => {
+      if (klaviyoId) {
+        console.log('✓ Klaviyo profile created & subscribed:', klaviyoId);
+      }
+    }).catch(err => console.error('Klaviyo error:', err));
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // 2. SUPABASE - Save to database (independent from Klaviyo)
+  // ═══════════════════════════════════════════════════════════════════
   const dbPromise = window.submitToOrastriaDB ? submitToOrastriaDB({
     email: state.email,
     firstName: state.name.split(' ')[0] || state.name,
@@ -477,21 +503,6 @@ async function submitEmail() {
   }).then(r => {
     if (r.success) {
       console.log('✓ DB saved:', r.data.id);
-      // Create Klaviyo profile after DB save (with all custom properties)
-      if (window.createKlaviyoProfile) {
-        const uid = window.orastriaUID || localStorage.getItem('orastria_uid');
-        window.createKlaviyoProfile(state.email, state.name.split(' ')[0] || state.name, uid, {
-          zodiac: state.zodiac,
-          gender: state.gender,
-          status: state.status,
-          goal: state.goal,
-          mindset: state.mindset,
-          loveLanguage: state.loveLanguage,
-          birthDate: `${state.dob.year}-${String(state.dob.month).padStart(2,'0')}-${String(state.dob.day).padStart(2,'0')}`,
-          birthPlace: state.birthPlace,
-          coverColor: state.coverColor
-        });
-      }
     } else {
       console.error('DB error:', r.error);
     }
@@ -502,8 +513,7 @@ async function submitEmail() {
   const timeStr = (state.birthTime && state.birthTime !== 'Unknown') ? state.birthTime : '12:00 pm';
   const birthDateFormatted = `${monthNames[state.dob.month-1]} ${state.dob.day}, ${state.dob.year} ${timeStr}`;
   
-  // Get user UUID from tracking system
-  const userId = window.orastriaUID || localStorage.getItem('orastria_uid') || null;
+  // userId already defined above
   
   const webhookPromise = fetch('https://ismypartner.app.n8n.cloud/webhook/20a6c1c6-df2e-4d43-a19b-4daa65017850', {
     method: 'POST',
