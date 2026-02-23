@@ -188,10 +188,7 @@ function initPixel(advancedMatching = {}) {
         'Prefer': 'return=minimal'
       },
       body: JSON.stringify({
-        buy: true,
-        stripe_session_id: sessionId || null,
-        purchase_timestamp: new Date().toISOString(),
-        purchase_event_id: eventId // Store event_id for reference
+        buy: true
       })
     }
   ).then(r => {
