@@ -23,6 +23,89 @@ const state = {
 let currentStep = 0; // 0 = landing
 let maxStep = 13;
 
+// ── STATE PERSISTENCE (for Stripe back navigation) ──────────
+const STATE_KEY = 'orastria_quiz_state';
+const CHECKOUT_FLAG = 'orastria_checkout_pending';
+
+function saveStateBeforeCheckout() {
+  const saveData = {
+    state: { ...state },
+    currentStep: currentStep,
+    timestamp: Date.now()
+  };
+  sessionStorage.setItem(STATE_KEY, JSON.stringify(saveData));
+  sessionStorage.setItem(CHECKOUT_FLAG, 'true');
+  console.log('✓ Quiz state saved before checkout');
+}
+
+function restoreStateIfReturning() {
+  const checkoutPending = sessionStorage.getItem(CHECKOUT_FLAG);
+  const savedData = sessionStorage.getItem(STATE_KEY);
+  
+  if (!checkoutPending || !savedData) return false;
+  
+  try {
+    const parsed = JSON.parse(savedData);
+    // Only restore if saved within last 30 minutes
+    if (Date.now() - parsed.timestamp > 30 * 60 * 1000) {
+      clearSavedState();
+      return false;
+    }
+    
+    // Restore state
+    Object.assign(state, parsed.state);
+    currentStep = parsed.currentStep;
+    
+    console.log('✓ Quiz state restored from checkout return');
+    return true;
+  } catch (e) {
+    console.error('Failed to restore state:', e);
+    clearSavedState();
+    return false;
+  }
+}
+
+function clearSavedState() {
+  sessionStorage.removeItem(STATE_KEY);
+  sessionStorage.removeItem(CHECKOUT_FLAG);
+}
+
+function applyRestoredState() {
+  // Restore UI to match state
+  if (state.zodiac) {
+    populateZodiacReveal(state.zodiac);
+  }
+  if (state.name) {
+    updateBookCoverName(state.name);
+    updateBookCoverDate();
+  }
+  if (state.coverColor) {
+    // Find and click the matching swatch
+    document.querySelectorAll('.swatch').forEach(btn => {
+      if (btn.getAttribute('onclick')?.includes(state.coverColor)) {
+        btn.click();
+      }
+    });
+  }
+  
+  // Show thank you screen (user was at checkout)
+  showScreen('screen-thankyou');
+  
+  // Copy book to final preview
+  const finalPreview = document.getElementById('final-book-preview');
+  const srcSVG = document.getElementById('book-cover')?.querySelector('svg');
+  if (srcSVG && finalPreview) {
+    finalPreview.innerHTML = srcSVG.outerHTML;
+  }
+  
+  // Set thank you name
+  const tyName = document.getElementById('ty-name');
+  if (tyName) tyName.textContent = state.name || 'friend';
+  
+  // Clear the saved state now that we've restored
+  clearSavedState();
+}
+
 // ── ZODIAC GLYPHS (real astrological SVG paths, 20×20 viewbox) ──
 // Each path is drawn at scale(0.55) so it fits the 11px tall sign band
 const ZODIAC_GLYPHS = {
@@ -112,6 +195,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('birth-place').addEventListener('keydown', e => { if(e.key==='Enter') submitPlace(); });
   document.getElementById('user-name').addEventListener('keydown',   e => { if(e.key==='Enter') submitName(); });
   document.getElementById('user-email').addEventListener('keydown',  e => { if(e.key==='Enter') submitEmail(); });
+
+  // Check if returning from Stripe checkout (back button)
+  if (restoreStateIfReturning()) {
+    // Small delay to ensure DOM is ready
+    setTimeout(applyRestoredState, 100);
+  }
 });
 
 
@@ -563,6 +652,9 @@ function initiateCheckout() {
       currency: 'EUR'
     });
   }
+  
+  // Save state before redirect (so back button returns to checkout page, not quiz start)
+  saveStateBeforeCheckout();
   
   // Redirect directly to Stripe Payment Link (bypasses Worker completely)
   const stripePaymentLink = 'https://buy.stripe.com/dRmbJ188V6dEc7G76C2sM0y';
