@@ -5,9 +5,7 @@
 <script>
 // ══════════════════════════════════════════════════════════════════════════════
 // ORASTRIA THANK YOU PAGE - PURCHASE TRACKING
-// Logic: Only fire Purchase if uid exists AND buy != 'yes' in Supabase
-// Source of truth: Supabase (not localStorage)
-// v2026-02-24: Added UID resolution for Stripe session IDs
+// v2026-02-24-v2: Fixed personalization timing (no setTimeout)
 // ══════════════════════════════════════════════════════════════════════════════
 
 const SUPABASE_URL = 'https://bkxgpjxfexndjwawaiph.supabase.co';
@@ -15,6 +13,28 @@ const SUPABASE_KEY = 'sb_publishable_qw9JxZ0SwYY5s_yOOylcgg_BWF2FnQ7';
 const KLAVIYO_WORKER = 'https://orastria-api.orastria.workers.dev/klaviyo/purchase';
 const SESSION_RESOLVER = 'https://orastria-api.orastria.workers.dev/session-to-uid';
 const PIXEL_ID = '1196585509341329';
+
+// ════════════════════════════════════════════════════════════════════════════
+// PERSONALIZATION - Called when we have user data
+// ════════════════════════════════════════════════════════════════════════════
+function personalizePage(userData) {
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get('name') || (userData ? userData.first_name : '') || localStorage.getItem('orastria_name') || '';
+
+  if (name) {
+    const firstName = name.split(' ')[0];
+    const nameEl = document.getElementById('ty2-name');
+    const coverEl = document.getElementById('ty2-cover-name');
+    if (nameEl) nameEl.textContent = firstName;
+    if (coverEl) coverEl.textContent = firstName;
+    console.log('✓ Page personalized for:', firstName);
+  } else {
+    console.log('✓ Page personalized for: friend (no name found)');
+  }
+  
+  // Store for other scripts
+  window.thankYouUserData = userData;
+}
 
 // SHA256 hash function for email
 async function sha256(message) {
@@ -41,7 +61,7 @@ async function getUserIP() {
   }
 }
 
-// Initialize Meta Pixel (without firing Purchase yet)
+// Initialize Meta Pixel
 function initPixel(advancedMatching = {}) {
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -54,21 +74,19 @@ function initPixel(advancedMatching = {}) {
 
   fbq('init', PIXEL_ID, advancedMatching);
   fbq('track', 'PageView');
-  console.log('📊 Pixel initialized with advanced matching');
+  console.log('📊 Pixel initialized');
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// NEW: Resolve UID - handles both real UUIDs and Stripe session IDs
+// Resolve UID - handles both real UUIDs and Stripe session IDs
 // ════════════════════════════════════════════════════════════════════════════
 async function resolveUID(rawUID) {
-  // If it looks like a valid UUID, return it directly
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (rawUID && uuidRegex.test(rawUID)) {
     console.log('✓ UID is a valid UUID:', rawUID);
     return { uid: rawUID, email: null };
   }
 
-  // If it looks like a Stripe session ID, resolve it via our API
   if (rawUID && rawUID.startsWith('cs_')) {
     console.log('⚠️ UID is a Stripe session ID, resolving via API...');
     try {
@@ -89,7 +107,9 @@ async function resolveUID(rawUID) {
   return { uid: null, email: null };
 }
 
-// Main purchase flow
+// ════════════════════════════════════════════════════════════════════════════
+// MAIN PURCHASE FLOW
+// ════════════════════════════════════════════════════════════════════════════
 (async function processPurchase() {
   const urlParams = new URLSearchParams(window.location.search);
   let rawUID = urlParams.get('uid');
@@ -99,46 +119,33 @@ async function resolveUID(rawUID) {
   console.log('Raw UID from URL:', rawUID);
   console.log('Session ID:', sessionId);
 
-  // ════════════════════════════════════════════════════════════════════════════
   // STEP 0: Resolve UID if it's a Stripe session ID
-  // ════════════════════════════════════════════════════════════════════════════
   let uid = rawUID;
-  let resolvedEmail = null;
   
-  // If no UID but we have session_id, try to resolve from that
   if (!rawUID && sessionId && sessionId.startsWith('cs_')) {
     console.log('📍 No UID, but have session_id - attempting resolution...');
     const resolved = await resolveUID(sessionId);
     uid = resolved.uid;
-    resolvedEmail = resolved.email;
-  } 
-  // If UID looks like a session ID (cs_xxx), resolve it
-  else if (rawUID && rawUID.startsWith('cs_')) {
+  } else if (rawUID && rawUID.startsWith('cs_')) {
     const resolved = await resolveUID(rawUID);
     uid = resolved.uid;
-    resolvedEmail = resolved.email;
-  }
-  // If UID is a normal UUID, validate it
-  else if (rawUID) {
+  } else if (rawUID) {
     const resolved = await resolveUID(rawUID);
     uid = resolved.uid;
   }
 
-  // ════════════════════════════════════════════════════════════════════════════
   // STEP 1: Verify UID exists
-  // ════════════════════════════════════════════════════════════════════════════
   if (!uid) {
-    console.error('❌ Could not determine user ID - cannot verify purchase');
-    initPixel(); // Init pixel anyway for PageView
+    console.error('❌ Could not determine user ID');
+    initPixel();
+    personalizePage(null); // Still personalize with fallback
     return;
   }
   
   console.log('✅ Using resolved UID:', uid);
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // STEP 2: Check Supabase - is this a NEW purchase? (buy != 'yes')
-  // ════════════════════════════════════════════════════════════════════════════
-  console.log('📊 Checking Supabase for user status...');
+  // STEP 2: Fetch user from Supabase
+  console.log('📊 Fetching user from Supabase...');
   
   let userData;
   try {
@@ -157,129 +164,92 @@ async function resolveUID(rawUID) {
     if (!users || users.length === 0) {
       console.error('❌ User not found in database for UID:', uid);
       initPixel();
+      personalizePage(null);
       return;
     }
     
     userData = users[0];
-    console.log('✅ User found:', userData.email);
-    console.log('Current buy status:', userData.buy);
+    console.log('✅ User found:', userData.email, '| Name:', userData.first_name);
     
   } catch (error) {
     console.error('❌ Supabase fetch error:', error);
     initPixel();
+    personalizePage(null);
     return;
   }
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // STEP 3: If already purchased (buy = true/yes), DON'T fire Purchase again
-  // ════════════════════════════════════════════════════════════════════════════
+  // *** PERSONALIZE PAGE IMMEDIATELY AFTER GETTING USER DATA ***
+  personalizePage(userData);
+
+  // STEP 3: Check if already purchased
   if (userData.buy === true || userData.buy === 'yes' || userData.buy === 'true') {
-    console.log('⚠️ User already purchased (buy=' + userData.buy + ') - NOT firing Purchase event');
+    console.log('⚠️ User already purchased - NOT firing Purchase event again');
     initPixel();
-    
-    // Still personalize the page
-    window.thankYouUserData = userData;
     return;
   }
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // STEP 4: NEW PURCHASE - Fire Purchase event with deduplication
-  // ════════════════════════════════════════════════════════════════════════════
-  console.log('🎉 NEW PURCHASE DETECTED - Firing Purchase event');
+  // STEP 4: NEW PURCHASE - Fire events
+  console.log('🎉 NEW PURCHASE DETECTED');
   
-  // Get additional data for advanced matching
   const userIP = await getUserIP();
   const userAgent = navigator.userAgent;
   const fbclid = userData.fbclid || urlParams.get('fbclid') || '';
   const eventId = generateEventId(uid);
   
-  // Build advanced matching object
-  const advancedMatching = {
-    external_id: uid
-  };
+  const advancedMatching = { external_id: uid };
   
   if (fbclid) {
     advancedMatching.fbc = 'fb.1.' + Date.now() + '.' + fbclid;
   }
-  
   if (userData.email) {
     advancedMatching.em = await sha256(userData.email.toLowerCase().trim());
   }
-  
   if (userIP) {
     advancedMatching.client_ip_address = userIP;
   }
-  
   if (userAgent) {
     advancedMatching.client_user_agent = userAgent;
   }
   
-  console.log('📊 Advanced matching:', advancedMatching);
-  console.log('📊 Event ID for deduplication:', eventId);
+  console.log('📊 Event ID:', eventId);
   
-  // Initialize pixel with advanced matching
   initPixel(advancedMatching);
   
-  // Fire Purchase event with event_id for deduplication
   fbq('track', 'Purchase', {
     value: 7.99,
     currency: 'EUR',
     content_name: 'Orastria Full Book',
     content_type: 'product',
     content_ids: ['orastria-book'],
-    order_id: uid // Also use uid as order_id
+    order_id: uid
   }, { eventID: eventId });
   
-  console.log('✅ Purchase event fired: €7.99, event_id:', eventId);
+  console.log('✅ Purchase event fired: €7.99');
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // STEP 5: Update Supabase (buy = true) AND Klaviyo (pay? = yes)
-  // ════════════════════════════════════════════════════════════════════════════
+  // STEP 5: Update Supabase + Klaviyo (fire and forget)
   console.log('📝 Updating Supabase and Klaviyo...');
   
-  // Update Supabase
-  const supabaseUpdate = fetch(
-    `${SUPABASE_URL}/rest/v1/orastria_submissions?id=eq.${uid}`,
-    {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        buy: true
-      })
-    }
-  ).then(r => {
-    if (r.ok) {
-      console.log('✅ Supabase updated: buy = true');
-    } else {
-      console.error('❌ Supabase update failed:', r.status);
-    }
-  }).catch(err => console.error('❌ Supabase error:', err));
+  fetch(`${SUPABASE_URL}/rest/v1/orastria_submissions?id=eq.${uid}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({ buy: true })
+  }).then(r => console.log(r.ok ? '✅ Supabase: buy=true' : '❌ Supabase failed'))
+    .catch(e => console.error('❌ Supabase error:', e));
   
-  // Update Klaviyo (pay? = yes)
-  const klaviyoUpdate = fetch(KLAVIYO_WORKER, {
+  fetch(KLAVIYO_WORKER, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: userData.email })
-  }).then(r => r.json()).then(data => {
-    if (data.success) {
-      console.log('✅ Klaviyo updated: pay? = yes');
-    } else {
-      console.error('❌ Klaviyo update failed:', data.error);
-    }
-  }).catch(err => console.error('❌ Klaviyo error:', err));
-  
-  // Wait for both updates
-  await Promise.all([supabaseUpdate, klaviyoUpdate]);
+  }).then(r => r.json())
+    .then(d => console.log(d.success ? '✅ Klaviyo: pay?=yes' : '❌ Klaviyo failed:', d))
+    .catch(e => console.error('❌ Klaviyo error:', e));
   
   console.log('━━━ PURCHASE TRACKING COMPLETE ━━━');
-  
-  // Store user data for page personalization
-  window.thankYouUserData = userData;
 })();
 </script>
 <noscript><img height="1" width="1" style="display:none"
@@ -303,7 +273,6 @@ src="https://www.facebook.com/tr?id=1196585509341329&ev=PageView&noscript=1"
 
 <!-- ── HERO ────────────────────────────────────────────────── -->
 <section class="ty2-hero">
-  <!-- Animated checkmark -->
   <div class="ty2-check-wrap">
     <svg class="ty2-check-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="32" cy="32" r="30" stroke="#c9a227" stroke-width="2" stroke-opacity="0.3"/>
@@ -316,7 +285,6 @@ src="https://www.facebook.com/tr?id=1196585509341329&ev=PageView&noscript=1"
   <h1 class="ty2-title">Payment confirmed,<br><em id="ty2-name">friend</em>. ✨</h1>
   <p class="ty2-sub">Your complete personalised astrology book is being prepared right now. You'll receive it by email within a few minutes.</p>
 
-  <!-- Email reminder badge -->
   <div class="ty2-email-badge">
     <span class="ty2-email-icon">📬</span>
     Check your inbox — it's on its way
@@ -357,54 +325,36 @@ src="https://www.facebook.com/tr?id=1196585509341329&ev=PageView&noscript=1"
 <section class="ty2-book-section">
   <p class="ty2-book-label">A glimpse of what's inside</p>
   <div class="ty2-book-wrap">
-
-    <!-- Floating book SVG -->
     <div class="ty2-book-float">
       <svg class="ty2-book-svg" viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="10" y="5" width="160" height="230" rx="4" fill="#1a1a2e"/>
         <rect x="10" y="5" width="160" height="230" rx="4" stroke="#c9a227" stroke-width="2"/>
         <rect x="22" y="17" width="136" height="206" rx="2" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.4"/>
-
-        <!-- name band -->
         <rect x="22" y="24" width="136" height="26" rx="2" fill="#c9a227" fill-opacity="0.1"/>
         <rect x="22" y="24" width="136" height="26" rx="2" stroke="#c9a227" stroke-width="0.6" stroke-opacity="0.5"/>
         <text x="90" y="41" text-anchor="middle" fill="#c9a227" font-family="Georgia, serif" font-size="12" font-weight="bold" letter-spacing="0.5" id="ty2-cover-name">Your Name</text>
         <text x="90" y="58" text-anchor="middle" fill="#c9a227" font-family="Georgia, serif" font-size="6.5" fill-opacity="0.75" letter-spacing="2">BIRTH CHART READING</text>
-
-        <!-- chart rings -->
         <circle cx="90" cy="128" r="54" stroke="#c9a227" stroke-width="0.9" stroke-opacity="0.65"/>
         <circle cx="90" cy="128" r="39" stroke="#6b5b95" stroke-width="0.9" stroke-opacity="0.75"/>
         <circle cx="90" cy="128" r="24" stroke="#c9a227" stroke-width="0.9" stroke-opacity="0.65"/>
         <circle cx="90" cy="128" r="8" fill="#c9a227" fill-opacity="0.12" stroke="#c9a227" stroke-width="0.9"/>
-
-        <!-- spokes -->
         <line x1="90" y1="74" x2="90" y2="62" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.5"/>
         <line x1="90" y1="182" x2="90" y2="194" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.5"/>
         <line x1="36" y1="128" x2="24" y2="128" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.5"/>
         <line x1="144" y1="128" x2="156" y2="128" stroke="#c9a227" stroke-width="0.8" stroke-opacity="0.5"/>
-
-        <!-- planet dots -->
         <circle cx="90" cy="89" r="4" fill="#c9a227"/>
         <circle cx="117" cy="103" r="3" fill="#c9a227" fill-opacity="0.7"/>
         <circle cx="144" cy="128" r="4" fill="#6b5b95"/>
         <circle cx="68" cy="160" r="3" fill="#c9a227" fill-opacity="0.5"/>
-
-        <!-- zodiac glyph -->
         <g transform="translate(82, 193) scale(0.8)" fill="none" stroke="#c9a227" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 8 C3 5 6 3 10 3 C14 3 17 5 17 8 C17 11 14 13 10 13 C6 13 3 11 3 8 M10 13 L10 19 M7 19 L13 19"/>
         </g>
-
-        <!-- date -->
         <text x="90" y="216" text-anchor="middle" fill="#c9a227" font-family="Georgia, serif" font-size="6.5" fill-opacity="0.7">Jan 1, 1990</text>
-
-        <!-- spine -->
         <rect x="5" y="5" width="7" height="230" rx="1" fill="#0f0f1a"/>
         <text x="9" y="155" text-anchor="middle" fill="#c9a227" font-family="Georgia, serif" font-size="6" fill-opacity="0.5" letter-spacing="2" transform="rotate(-90, 9, 120)">ORASTRIA</text>
       </svg>
       <div class="ty2-book-glow"></div>
     </div>
-
-    <!-- Chapters teaser -->
     <div class="ty2-chapters">
       <p class="ty2-chapters-label">Your book includes</p>
       <ul class="ty2-chapters-list">
@@ -455,22 +405,6 @@ src="https://www.facebook.com/tr?id=1196585509341329&ev=PageView&noscript=1"
 </footer>
 
 <script>
-// ── Name personalisation ─────────────────────────────────────
-// Wait for purchase processing to complete, then personalize
-setTimeout(() => {
-  const userData = window.thankYouUserData;
-  const params = new URLSearchParams(window.location.search);
-  const name = params.get('name') || (userData ? userData.first_name : '') || localStorage.getItem('orastria_name') || '';
-
-  if (name) {
-    const firstName = name.split(' ')[0];
-    document.getElementById('ty2-name').textContent = firstName;
-    document.getElementById('ty2-cover-name').textContent = firstName;
-  }
-
-  console.log('✓ Page personalized for:', name || 'friend');
-}, 1500);
-
 // ── Animated checkmark on load ───────────────────────────────
 window.addEventListener('load', () => {
   setTimeout(() => {
