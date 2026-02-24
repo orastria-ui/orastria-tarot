@@ -276,13 +276,14 @@ async function resolveUID(rawUID) {
   }).then(r => console.log(r.ok ? '✅ Supabase: buy=true' : '❌ Supabase failed'))
     .catch(e => console.error('❌ Supabase error:', e));
   
-  fetch(KLAVIYO_WORKER, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: userData.email })
-  }).then(r => r.json())
-    .then(d => console.log(d.success ? '✅ Klaviyo: pay?=yes' : '❌ Klaviyo failed:', d))
-    .catch(e => console.error('❌ Klaviyo error:', e));
+  // Klaviyo Worker temporarily disabled (ERR_CONNECTION_CLOSED)
+  // fetch(KLAVIYO_WORKER, {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ email: userData.email })
+  // }).then(r => r.json())
+  //   .then(d => console.log(d.success ? '✅ Klaviyo: pay?=yes' : '❌ Klaviyo failed:', d))
+  //   .catch(e => console.error('❌ Klaviyo error:', e));
   
   console.log('━━━ PURCHASE TRACKING COMPLETE ━━━');
 })();
@@ -476,6 +477,8 @@ function copyLink() {
   });
 }
 </script>
+
+<script src="supabase-integration.js"></script>
 
 </body>
 </html>
