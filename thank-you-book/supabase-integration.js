@@ -1,6 +1,5 @@
 // Supabase Integration for Thank You Page
-const SUPABASE_URL = 'https://bkxgpjxfexndjwawaiph.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJreGdwanhmZXhuZGp3YXdhaXBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4MTY1MjEsImV4cCI6MjA1NTM5MjUyMX0.cqsC76Qr-NcjzXDxEbw55HRB4EZ7IUhXIB-y1xFvbnU';
+// Uses global SUPABASE_URL and SUPABASE_KEY from inline script
 const N8N_WEBHOOK = 'https://ismypartner.app.n8n.cloud/webhook/ff1c88e1-5523-4a12-960b-82a2660528d0';
 
 // Get UID and Stripe session from URL
@@ -25,8 +24,8 @@ console.log('🎉 Thank you page loaded - UID:', uid, 'Session:', sessionId);
             `${SUPABASE_URL}/rest/v1/orastria_submissions?id=eq.${uid}&select=*`,
             {
                 headers: {
-                    'apikey': SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
                 }
             }
         );
@@ -50,8 +49,8 @@ console.log('🎉 Thank you page loaded - UID:', uid, 'Session:', sessionId);
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                    'apikey': SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
                     'Prefer': 'return=minimal'
                 },
                 body: JSON.stringify({
