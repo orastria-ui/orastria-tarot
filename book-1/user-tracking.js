@@ -101,6 +101,17 @@ function captureGclid() {
   }
 }
 
+// Capture msclkid from URL and store it (Microsoft/Bing Ads)
+function captureMsclkid() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const msclkid = urlParams.get('msclkid');
+  
+  if (msclkid) {
+    localStorage.setItem('orastria_msclkid', msclkid);
+    console.log('✓ msclkid captured:', msclkid.substring(0, 20) + '...');
+  }
+}
+
 // Store email when captured (call this from quiz)
 function storeEmail(email) {
   if (email) {
@@ -172,6 +183,9 @@ async function resolveSessionUID() {
   
   // Capture gclid if present (Google Ads)
   captureGclid();
+  
+  // Capture msclkid if present (Microsoft/Bing Ads)
+  captureMsclkid();
 
   // Resolve session UID (migrate old user_id-based URLs) after Supabase loads
   setTimeout(() => {
@@ -187,3 +201,4 @@ window.getUserID = getUserID;
 window.storeEmail = storeEmail;
 window.captureFbclid = captureFbclid;
 window.captureGclid = captureGclid;
+window.captureMsclkid = captureMsclkid;

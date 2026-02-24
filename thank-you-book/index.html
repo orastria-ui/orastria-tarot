@@ -5,7 +5,7 @@
 <script>
 // ══════════════════════════════════════════════════════════════════════════════
 // ORASTRIA THANK YOU PAGE - PURCHASE TRACKING
-// v2026-02-24-v3: Added Google Ads conversion tracking + Enhanced Conversions
+// v2026-02-24-v4: Added Microsoft/Bing Ads conversion tracking
 // ══════════════════════════════════════════════════════════════════════════════
 
 const SUPABASE_URL = 'https://bkxgpjxfexndjwawaiph.supabase.co';
@@ -250,6 +250,17 @@ async function resolveUID(rawUID) {
     console.warn('⚠️ gtag not loaded - Google Ads conversion skipped');
   }
 
+  // ════════════════════════════════════════════════════════════════════════════
+  // MICROSOFT/BING ADS CONVERSION
+  // ════════════════════════════════════════════════════════════════════════════
+  window.uetq = window.uetq || [];
+  window.uetq.push('event', 'purchase', {
+    'revenue_value': 7.99,
+    'currency': 'EUR',
+    'transaction_id': uid
+  });
+  console.log('✅ Bing Ads conversion fired: €7.99');
+
   // STEP 5: Update Supabase + Klaviyo (fire and forget)
   console.log('📝 Updating Supabase and Klaviyo...');
   
@@ -289,6 +300,9 @@ src="https://www.facebook.com/tr?id=1196585509341329&ev=PageView&noscript=1"
   gtag('config', 'AW-17514821837');
 </script>
 <!-- End Google Ads -->
+<!-- Microsoft/Bing UET Tag -->
+<script>(function(w,d,t,u,o){w[u]=w[u]||[],o.ts=(new Date).getTime();var n=d.createElement(t);n.src="https://bat.bing.net/bat.js?ti="+o.ti+("uetq"!=u?"&q="+u:""),n.async=1,n.onload=n.onreadystatechange=function(){var s=this.readyState;s&&"loaded"!==s&&"complete"!==s||(o.q=w[u],w[u]=new UET(o),w[u].push("pageLoad"),n.onload=n.onreadystatechange=null)};var i=d.getElementsByTagName(t)[0];i.parentNode.insertBefore(n,i)})(window,document,"script","uetq",{ti:"187237886",enableAutoSpaTracking:true});</script>
+<!-- End Bing UET -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Orastria — Your Book is Being Prepared ✨</title>
