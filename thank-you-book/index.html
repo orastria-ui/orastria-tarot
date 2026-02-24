@@ -7,11 +7,13 @@
 // ORASTRIA THANK YOU PAGE - PURCHASE TRACKING
 // Logic: Only fire Purchase if uid exists AND buy != 'yes' in Supabase
 // Source of truth: Supabase (not localStorage)
+// v2026-02-24: Added UID resolution for Stripe session IDs
 // ══════════════════════════════════════════════════════════════════════════════
 
 const SUPABASE_URL = 'https://bkxgpjxfexndjwawaiph.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_qw9JxZ0SwYY5s_yOOylcgg_BWF2FnQ7';
 const KLAVIYO_WORKER = 'https://orastria-api.orastria.workers.dev/klaviyo/purchase';
+const SESSION_RESOLVER = 'https://orastria-api.orastria.workers.dev/session-to-uid';
 const PIXEL_ID = '1196585509341329';
 
 // SHA256 hash function for email
@@ -55,24 +57,83 @@ function initPixel(advancedMatching = {}) {
   console.log('📊 Pixel initialized with advanced matching');
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+// NEW: Resolve UID - handles both real UUIDs and Stripe session IDs
+// ════════════════════════════════════════════════════════════════════════════
+async function resolveUID(rawUID) {
+  // If it looks like a valid UUID, return it directly
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (rawUID && uuidRegex.test(rawUID)) {
+    console.log('✓ UID is a valid UUID:', rawUID);
+    return { uid: rawUID, email: null };
+  }
+
+  // If it looks like a Stripe session ID, resolve it via our API
+  if (rawUID && rawUID.startsWith('cs_')) {
+    console.log('⚠️ UID is a Stripe session ID, resolving via API...');
+    try {
+      const response = await fetch(`${SESSION_RESOLVER}?session_id=${rawUID}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.uid) {
+          console.log('✓ Resolved real UID from session:', data.uid);
+          return { uid: data.uid, email: data.email };
+        }
+      }
+      console.error('❌ Could not resolve session to UID');
+    } catch (error) {
+      console.error('❌ Session resolution failed:', error);
+    }
+  }
+
+  return { uid: null, email: null };
+}
+
 // Main purchase flow
 (async function processPurchase() {
   const urlParams = new URLSearchParams(window.location.search);
-  const uid = urlParams.get('uid');
+  let rawUID = urlParams.get('uid');
   const sessionId = urlParams.get('session_id');
   
   console.log('━━━ THANK YOU PAGE LOADED ━━━');
-  console.log('UID from URL:', uid);
+  console.log('Raw UID from URL:', rawUID);
   console.log('Session ID:', sessionId);
 
   // ════════════════════════════════════════════════════════════════════════════
-  // STEP 1: Verify UID exists in URL
+  // STEP 0: Resolve UID if it's a Stripe session ID
+  // ════════════════════════════════════════════════════════════════════════════
+  let uid = rawUID;
+  let resolvedEmail = null;
+  
+  // If no UID but we have session_id, try to resolve from that
+  if (!rawUID && sessionId && sessionId.startsWith('cs_')) {
+    console.log('📍 No UID, but have session_id - attempting resolution...');
+    const resolved = await resolveUID(sessionId);
+    uid = resolved.uid;
+    resolvedEmail = resolved.email;
+  } 
+  // If UID looks like a session ID (cs_xxx), resolve it
+  else if (rawUID && rawUID.startsWith('cs_')) {
+    const resolved = await resolveUID(rawUID);
+    uid = resolved.uid;
+    resolvedEmail = resolved.email;
+  }
+  // If UID is a normal UUID, validate it
+  else if (rawUID) {
+    const resolved = await resolveUID(rawUID);
+    uid = resolved.uid;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // STEP 1: Verify UID exists
   // ════════════════════════════════════════════════════════════════════════════
   if (!uid) {
-    console.error('❌ No UID in URL - cannot verify purchase');
+    console.error('❌ Could not determine user ID - cannot verify purchase');
     initPixel(); // Init pixel anyway for PageView
     return;
   }
+  
+  console.log('✅ Using resolved UID:', uid);
 
   // ════════════════════════════════════════════════════════════════════════════
   // STEP 2: Check Supabase - is this a NEW purchase? (buy != 'yes')
@@ -203,7 +264,7 @@ function initPixel(advancedMatching = {}) {
   const klaviyoUpdate = fetch(KLAVIYO_WORKER, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ uid: uid })
+    body: JSON.stringify({ email: userData.email })
   }).then(r => r.json()).then(data => {
     if (data.success) {
       console.log('✅ Klaviyo updated: pay? = yes');
