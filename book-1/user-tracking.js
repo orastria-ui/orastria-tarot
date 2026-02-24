@@ -90,6 +90,17 @@ function captureFbclid() {
   }
 }
 
+// Capture gclid from URL and store it (Google Ads)
+function captureGclid() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const gclid = urlParams.get('gclid');
+  
+  if (gclid) {
+    localStorage.setItem('orastria_gclid', gclid);
+    console.log('✓ gclid captured:', gclid.substring(0, 20) + '...');
+  }
+}
+
 // Store email when captured (call this from quiz)
 function storeEmail(email) {
   if (email) {
@@ -156,8 +167,11 @@ async function resolveSessionUID() {
   // Store globally for use in other scripts
   window.orastriaUID = uid;
 
-  // Capture fbclid if present
+  // Capture fbclid if present (Meta Ads)
   captureFbclid();
+  
+  // Capture gclid if present (Google Ads)
+  captureGclid();
 
   // Resolve session UID (migrate old user_id-based URLs) after Supabase loads
   setTimeout(() => {
@@ -172,3 +186,4 @@ async function resolveSessionUID() {
 window.getUserID = getUserID;
 window.storeEmail = storeEmail;
 window.captureFbclid = captureFbclid;
+window.captureGclid = captureGclid;

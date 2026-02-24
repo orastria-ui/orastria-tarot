@@ -5,7 +5,7 @@
 <script>
 // ══════════════════════════════════════════════════════════════════════════════
 // ORASTRIA THANK YOU PAGE - PURCHASE TRACKING
-// v2026-02-24-v2: Fixed personalization timing (no setTimeout)
+// v2026-02-24-v3: Added Google Ads conversion tracking + Enhanced Conversions
 // ══════════════════════════════════════════════════════════════════════════════
 
 const SUPABASE_URL = 'https://bkxgpjxfexndjwawaiph.supabase.co';
@@ -224,7 +224,31 @@ async function resolveUID(rawUID) {
     order_id: uid
   }, { eventID: eventId });
   
-  console.log('✅ Purchase event fired: €7.99');
+  console.log('✅ Meta Purchase event fired: €7.99');
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // GOOGLE ADS CONVERSION (with Enhanced Conversions)
+  // ════════════════════════════════════════════════════════════════════════════
+  if (typeof gtag === 'function') {
+    // Set user_data for Enhanced Conversions
+    gtag('set', 'user_data', {
+      'email': userData.email || '',
+      'first_name': userData.first_name || '',
+      'last_name': userData.last_name || ''
+    });
+    
+    // Fire conversion event
+    gtag('event', 'conversion', {
+      'send_to': 'AW-17514821837/88zjCM_ng_4bEM3x259B',
+      'value': 7.99,
+      'currency': 'EUR',
+      'transaction_id': uid
+    });
+    
+    console.log('✅ Google Ads conversion fired: €7.99');
+  } else {
+    console.warn('⚠️ gtag not loaded - Google Ads conversion skipped');
+  }
 
   // STEP 5: Update Supabase + Klaviyo (fire and forget)
   console.log('📝 Updating Supabase and Klaviyo...');
@@ -256,6 +280,15 @@ async function resolveUID(rawUID) {
 src="https://www.facebook.com/tr?id=1196585509341329&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
+<!-- Google Ads (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-17514821837"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-17514821837');
+</script>
+<!-- End Google Ads -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Orastria — Your Book is Being Prepared ✨</title>

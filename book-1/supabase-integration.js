@@ -35,8 +35,9 @@ async function submitToOrastriaDB(formData) {
         // Get IP address
         const ipAddress = await getUserIP();
         
-        // Get fbclid from localStorage
+        // Get fbclid and gclid from localStorage
         const fbclid = localStorage.getItem('orastria_fbclid') || null;
+        const gclid = localStorage.getItem('orastria_gclid') || null;
 
         const { data, error } = await window.supabaseClient
             .from('orastria_submissions')
@@ -59,6 +60,7 @@ async function submitToOrastriaDB(formData) {
                 user_agent: navigator.userAgent,
                 ip_address: ipAddress,
                 fbclid: fbclid,
+                gclid: gclid,
                 lang: 'en'
             }])
             .select();
@@ -69,7 +71,7 @@ async function submitToOrastriaDB(formData) {
         }
 
         console.log('✓ Submitted to Orastria database:', data);
-        console.log('  → IP:', ipAddress, '| fbclid:', fbclid ? fbclid.substring(0,20)+'...' : 'none');
+        console.log('  → IP:', ipAddress, '| fbclid:', fbclid ? fbclid.substring(0,20)+'...' : 'none', '| gclid:', gclid ? gclid.substring(0,20)+'...' : 'none');
         return { success: true, data: data[0] };
 
     } catch (err) {
