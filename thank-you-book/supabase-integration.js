@@ -41,8 +41,8 @@ console.log('🎉 Thank you page loaded - UID:', uid, 'Session:', sessionId);
         const userData = users[0];
         console.log('✅ User data loaded:', userData.email);
 
-        // 2. Update buy = "yes" in database
-        console.log('📝 Updating buy status to "yes"...');
+        // 2. Update buy = true in database
+        console.log('📝 Updating buy status to true...');
         
         const updateResponse = await fetch(
             `${SUPABASE_URL}/rest/v1/orastria_submissions?id=eq.${uid}`,
@@ -55,52 +55,56 @@ console.log('🎉 Thank you page loaded - UID:', uid, 'Session:', sessionId);
                     'Prefer': 'return=minimal'
                 },
                 body: JSON.stringify({
-                    buy: 'yes',
-                    stripe_session_id: sessionId || null,
-                    purchase_timestamp: new Date().toISOString()
+                    buy: true,
+                    stripe_session_id: sessionId || null
                 })
             }
         );
 
         if (updateResponse.ok) {
-            console.log('✅ Database updated: buy = "yes"');
+            console.log('✅ Database updated: buy = true');
         } else {
             console.error('⚠️  Database update failed:', await updateResponse.text());
         }
 
-        // 3. Send all data to n8n webhook
+        // 3. Convert birth_time from 12h to 24h format
+        function convert12hTo24h(time12h) {
+            if (!time12h) return null;
+            
+            const match = time12h.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+            if (!match) return time12h; // Return as-is if format doesn't match
+            
+            let [_, hours, minutes, period] = match;
+            hours = parseInt(hours);
+            
+            if (period.toUpperCase() === 'PM' && hours !== 12) {
+                hours += 12;
+            } else if (period.toUpperCase() === 'AM' && hours === 12) {
+                hours = 0;
+            }
+            
+            return `${hours.toString().padStart(2, '0')}:${minutes}`;
+        }
+        
+        // 4. Send all data to n8n webhook
         console.log('📤 Sending data to n8n webhook...');
         
         const webhookPayload = {
-            // User identity
             user_id: userData.user_id,
             email: userData.email,
             first_name: userData.first_name,
             last_name: userData.last_name,
-            
-            // Birth data
             date_birth: userData.date_birth,
-            birth_time: userData.hcur_min_am,
+            birth_time: convert12hTo24h(userData.hcur_min_am),
             place_of_birth: userData.place_of_birth,
             sun_sign: userData.sun_sign,
-            
-            // Quiz answers (simple format)
-            gender: userData.genre ? userData.genre.toLowerCase() : null,
-            relationship_status: userData.single ? 'single' : 'in a relationship',
-            main_goal: userData.answer_question ? userData.answer_question.toLowerCase() : null,
-            logic_vs_emotions: userData.answer_answer ? userData.answer_answer.toLowerCase() : null,
-            
-            // Book preferences
+            gender: userData.genre,
+            single: userData.single,
+            relationship_goal: userData.answer_question,
+            mindset: userData.answer_answer,
             cover_color: userData.color_book,
             variant: userData.variant,
-            
-            // Purchase data
-            stripe_session_id: sessionId || null,
             purchase_timestamp: new Date().toISOString(),
-            price: '7.99',
-            currency: 'EUR',
-            
-            // Tracking
             ip_address: userData.ip_address,
             fbclid: userData.fbclid,
             submitted_at: userData.created_at
