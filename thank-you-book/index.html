@@ -276,6 +276,43 @@ async function resolveUID(rawUID) {
   }).then(r => console.log(r.ok ? '✅ Supabase: buy=true' : '❌ Supabase failed'))
     .catch(e => console.error('❌ Supabase error:', e));
   
+  // n8n webhook for purchase notification
+  fetch('https://ismypartner.app.n8n.cloud/webhook/ff1c88e1-5523-4a12-960b-82a2660528d0', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user_id: userData.user_id,
+      email: userData.email,
+      first_name: userData.first_name,
+      last_name: userData.last_name,
+      date_birth: userData.date_birth,
+      birth_time: (() => {
+        const t = userData.hcur_min_am;
+        if (!t) return null;
+        const m = t.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (!m) return t;
+        let h = parseInt(m[1]);
+        const min = m[2], per = m[3].toUpperCase();
+        if (per === 'PM' && h !== 12) h += 12;
+        else if (per === 'AM' && h === 12) h = 0;
+        return h.toString().padStart(2, '0') + ':' + min;
+      })(),
+      place_of_birth: userData.place_of_birth,
+      sun_sign: userData.sun_sign,
+      gender: userData.genre,
+      single: userData.single,
+      relationship_goal: userData.answer_question,
+      mindset: userData.answer_answer,
+      cover_color: userData.color_book,
+      variant: userData.variant,
+      purchase_timestamp: new Date().toISOString(),
+      ip_address: userData.ip_address,
+      fbclid: userData.fbclid,
+      submitted_at: userData.created_at
+    })
+  }).then(r => console.log(r.ok ? '✅ n8n webhook sent' : '❌ n8n webhook failed'))
+    .catch(e => console.error('❌ n8n error:', e));
+  
   // Klaviyo Worker temporarily disabled (ERR_CONNECTION_CLOSED)
   // fetch(KLAVIYO_WORKER, {
   //   method: 'POST',
@@ -477,8 +514,6 @@ function copyLink() {
   });
 }
 </script>
-
-<script src="supabase-integration.js"></script>
 
 </body>
 </html>
