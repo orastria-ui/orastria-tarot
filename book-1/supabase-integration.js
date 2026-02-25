@@ -94,6 +94,9 @@ async function getOrCreateSession() {
         const gclid = localStorage.getItem('orastria_gclid') || null;
         const msclkid = localStorage.getItem('orastria_msclkid') || null;
         const ipAddress = await getUserIP();
+        
+        // Capture full arrival URL (path + query params)
+        const fromOld = window.location.pathname + window.location.search;
 
         const { data: newEntry, error: insertError } = await window.supabaseClient
             .from('orastria_submissions')
@@ -104,6 +107,7 @@ async function getOrCreateSession() {
                 fbclid: fbclid,
                 gclid: gclid,
                 msclkid: msclkid,
+                from_old: fromOld,
                 user_agent: navigator.userAgent,
                 ip_address: ipAddress
             }])
