@@ -45,14 +45,38 @@ async function getOrCreateSession() {
     }
 
     try {
-        // 1. Check if entry exists for this UID (by user_id field)
-        const { data: existing, error: selectError } = await window.supabaseClient
+        // 1. Check if entry exists for this UID
+        // Try by 'id' first (if UID was migrated to database ID by resolveSessionUID)
+        let existing = null;
+        let selectError = null;
+
+        // First try: lookup by 'id' (UID might be the database ID after migration)
+        const { data: byId, error: idError } = await window.supabaseClient
             .from('orastria_submissions')
-            .select('id, last_step, email')
-            .eq('user_id', uid)
-            .order('created_at', { ascending: false })
-            .limit(1)
+            .select('id, last_step, email, user_id')
+            .eq('id', uid)
             .maybeSingle();
+
+        if (!idError && byId) {
+            existing = byId;
+            console.log('✓ Session found by id:', existing.id);
+        } else {
+            // Second try: lookup by 'user_id' (original client-generated UUID)
+            const { data: byUserId, error: userIdError } = await window.supabaseClient
+                .from('orastria_submissions')
+                .select('id, last_step, email, user_id')
+                .eq('user_id', uid)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (userIdError) {
+                selectError = userIdError;
+            } else if (byUserId) {
+                existing = byUserId;
+                console.log('✓ Session found by user_id:', existing.id);
+            }
+        }
 
         if (selectError) {
             console.error('Session lookup error:', selectError);
