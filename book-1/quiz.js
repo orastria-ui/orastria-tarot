@@ -23,9 +23,52 @@ const state = {
 let currentStep = 0; // 0 = landing
 let maxStep = 13;
 
-// ── STATE PERSISTENCE (for Stripe back navigation) ──────────
-const STATE_KEY = 'orastria_quiz_state';
+// ══════════════════════════════════════════════════════════════════
+// STATE PERSISTENCE — Save/restore quiz state in localStorage
+// ══════════════════════════════════════════════════════════════════
+
+const QUIZ_STATE_KEY = 'orastria_quiz_progress';
+const STATE_KEY = 'orastria_quiz_state'; // For checkout return
 const CHECKOUT_FLAG = 'orastria_checkout_pending';
+
+// Save current state to localStorage (called on each step)
+function saveQuizState() {
+  const saveData = {
+    state: { ...state },
+    currentStep: currentStep,
+    timestamp: Date.now()
+  };
+  localStorage.setItem(QUIZ_STATE_KEY, JSON.stringify(saveData));
+}
+
+// Load saved state from localStorage
+function loadQuizState() {
+  try {
+    const saved = localStorage.getItem(QUIZ_STATE_KEY);
+    if (!saved) return null;
+
+    const parsed = JSON.parse(saved);
+
+    // Expire after 7 days
+    if (Date.now() - parsed.timestamp > 7 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(QUIZ_STATE_KEY);
+      return null;
+    }
+
+    return parsed;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Clear saved state (call after purchase)
+function clearQuizState() {
+  localStorage.removeItem(QUIZ_STATE_KEY);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CHECKOUT STATE PERSISTENCE (for Stripe back button)
+// ══════════════════════════════════════════════════════════════════
 
 function saveStateBeforeCheckout() {
   const saveData = {
@@ -41,31 +84,31 @@ function saveStateBeforeCheckout() {
 function restoreStateIfReturning() {
   const checkoutPending = sessionStorage.getItem(CHECKOUT_FLAG);
   const savedData = sessionStorage.getItem(STATE_KEY);
-  
+
   if (!checkoutPending || !savedData) return false;
-  
+
   try {
     const parsed = JSON.parse(savedData);
     // Only restore if saved within last 30 minutes
     if (Date.now() - parsed.timestamp > 30 * 60 * 1000) {
-      clearSavedState();
+      clearCheckoutState();
       return false;
     }
-    
+
     // Restore state
     Object.assign(state, parsed.state);
     currentStep = parsed.currentStep;
-    
+
     console.log('✓ Quiz state restored from checkout return');
     return true;
   } catch (e) {
     console.error('Failed to restore state:', e);
-    clearSavedState();
+    clearCheckoutState();
     return false;
   }
 }
 
-function clearSavedState() {
+function clearCheckoutState() {
   sessionStorage.removeItem(STATE_KEY);
   sessionStorage.removeItem(CHECKOUT_FLAG);
 }
@@ -80,31 +123,99 @@ function applyRestoredState() {
     updateBookCoverDate();
   }
   if (state.coverColor) {
-    // Find and click the matching swatch
-    document.querySelectorAll('.swatch').forEach(btn => {
-      if (btn.getAttribute('onclick')?.includes(state.coverColor)) {
-        btn.click();
-      }
-    });
+    // Apply colors directly
+    document.getElementById('book-bg')?.setAttribute('fill', state.coverColor);
+    document.getElementById('book-spine')?.setAttribute('fill', state.coverColorSpine);
   }
-  
+
   // Show thank you screen (user was at checkout)
   showScreen('screen-thankyou');
-  
+
   // Copy book to final preview
   const finalPreview = document.getElementById('final-book-preview');
   const srcSVG = document.getElementById('book-cover')?.querySelector('svg');
   if (srcSVG && finalPreview) {
     finalPreview.innerHTML = srcSVG.outerHTML;
   }
-  
+
   // Set thank you name
   const tyName = document.getElementById('ty-name');
   if (tyName) tyName.textContent = state.name || 'friend';
-  
+
   // Clear the saved state now that we've restored
-  clearSavedState();
+  clearCheckoutState();
 }
+
+// ══════════════════════════════════════════════════════════════════
+// SESSION RESUME — Listen for session ready event
+// ══════════════════════════════════════════════════════════════════
+
+window.addEventListener('orastria-session-ready', function(e) {
+  const session = e.detail;
+
+  console.log('📍 Session ready:', session);
+
+  // Only resume if:
+  // 1. Has progress (last_step > 0)
+  // 2. Hasn't submitted email yet (last_step < 13)
+  // 3. User is still on landing (currentStep === 0)
+  if (session.last_step > 0 && session.last_step < 13 && !session.email && currentStep === 0) {
+
+    const savedProgress = loadQuizState();
+
+    // Verify we have local state that matches or exceeds DB progress
+    if (savedProgress && savedProgress.currentStep >= session.last_step) {
+
+      // ─────────────────────────────────────────────────────
+      // 1. RESTORE JS STATE
+      // ─────────────────────────────────────────────────────
+      Object.assign(state, savedProgress.state);
+      currentStep = savedProgress.currentStep;
+
+      console.log('→ Restoring session | Step:', currentStep, '| Gender:', state.gender, '| Zodiac:', state.zodiac);
+
+      // ─────────────────────────────────────────────────────
+      // 2. RESTORE UI ELEMENTS (depends on which step)
+      // ─────────────────────────────────────────────────────
+
+      // Zodiac reveal (if past step 3)
+      if (state.zodiac && currentStep >= 4) {
+        populateZodiacReveal(state.zodiac);
+      }
+
+      // Book cover name + date (if past step 11)
+      if (state.name && currentStep >= 11) {
+        updateBookCoverName(state.name);
+        updateBookCoverDate();
+      }
+
+      // Book cover color (if past step 12)
+      if (state.coverColor && currentStep >= 12) {
+        document.getElementById('book-bg')?.setAttribute('fill', state.coverColor);
+        document.getElementById('book-spine')?.setAttribute('fill', state.coverColorSpine);
+        // Mark the correct swatch as active
+        document.querySelectorAll('.swatch').forEach(btn => {
+          const onclick = btn.getAttribute('onclick');
+          if (onclick && onclick.includes(state.coverColor)) {
+            btn.classList.add('active');
+          }
+        });
+      }
+
+      // ─────────────────────────────────────────────────────
+      // 3. REDIRECT TO THE RIGHT SCREEN + STEP
+      // ─────────────────────────────────────────────────────
+      showScreen('screen-quiz');
+      showStepWithoutTracking(currentStep);
+
+      console.log('✓ Session restored — user sees step', currentStep);
+
+    } else {
+      // No matching local state → start fresh but keep the DB entry
+      console.log('⚠️ DB has progress but no local state — starting fresh');
+    }
+  }
+});
 
 // ── ZODIAC GLYPHS (real astrological SVG paths, 20×20 viewbox) ──
 // Each path is drawn at scale(0.55) so it fits the 11px tall sign band
@@ -253,10 +364,13 @@ function selectGender(gender) {
   showScreen('screen-quiz');
   currentStep = 1;
   showStep(1);
+  saveQuizState(); // Save immediately after gender selection
 }
 
 // ── QUIZ NAVIGATION ─────────────────────────────────────────
-function showStep(n) {
+
+// Original showStep (without tracking) — used for session restore
+function showStepWithoutTracking(n) {
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   const el = document.getElementById('step-'+n);
   if (el) {
@@ -269,6 +383,23 @@ function showStep(n) {
 
   // Show/hide back button
   document.getElementById('back-btn').style.visibility = n <= 1 ? 'hidden' : 'visible';
+}
+
+// Hooked showStep — saves state + tracks in Supabase
+function showStep(n) {
+  // Show the step UI
+  showStepWithoutTracking(n);
+
+  // Save state locally
+  saveQuizState();
+
+  // Track in Supabase (only if progressing forward)
+  if (n > (window.orastriaLastStep || 0)) {
+    if (window.queueStepUpdate) {
+      window.queueStepUpdate(n);
+    }
+    window.orastriaLastStep = n;
+  }
 }
 
 function nextStep() {
@@ -286,6 +417,7 @@ function goBack() {
     showStep(currentStep);
   } else {
     showScreen('screen-0');
+    currentStep = 0;
   }
 }
 
@@ -485,7 +617,7 @@ async function submitEmail() {
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  // 2. SUPABASE - Save to database (independent from Klaviyo)
+  // 2. SUPABASE - Update existing session (uses UPDATE instead of INSERT)
   // ═══════════════════════════════════════════════════════════════════
   const dbPromise = window.submitToOrastriaDB ? submitToOrastriaDB({
     email: state.email,
@@ -504,23 +636,23 @@ async function submitEmail() {
     if (r.success) {
       const dbID = r.data.id;
       console.log('✓ DB saved:', dbID);
-      
+
       // UPDATE SESSION UID: Use database ID instead of client-generated UUID
       window.orastriaUID = dbID;
       localStorage.setItem('orastria_uid', dbID);
-      
+
       // Update URL without reload
       const url = new URL(window.location);
       url.searchParams.set('uid', dbID);
       window.history.replaceState({}, '', url);
-      
+
       console.log('→ Session UID updated to database ID:', dbID);
-      
+
       // Send to n8n webhook AFTER database insert (uses new database ID)
       const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       const timeStr = (state.birthTime && state.birthTime !== 'Unknown') ? state.birthTime : '12:00 pm';
       const birthDateFormatted = `${monthNames[state.dob.month-1]} ${state.dob.day}, ${state.dob.year} ${timeStr}`;
-      
+
       return fetch('https://ismypartner.app.n8n.cloud/webhook/20a6c1c6-df2e-4d43-a19b-4daa65017850', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -665,11 +797,11 @@ function initiateCheckout() {
   // Get UID from URL or generate one
   const urlParams = new URLSearchParams(window.location.search);
   const uid = urlParams.get('uid') || localStorage.getItem('orastria_uid') || 'unknown';
-  
+
   // Get email if available
   const emailInput = document.getElementById('user-email');
   const email = emailInput ? emailInput.value : '';
-  
+
   // Fire Meta InitiateCheckout event
   if (typeof fbq !== 'undefined') {
     fbq('track', 'InitiateCheckout', {
@@ -679,14 +811,19 @@ function initiateCheckout() {
       currency: 'EUR'
     });
   }
-  
+
+  // Track initiate_checkout step (step 14)
+  if (window.queueStepUpdate) {
+    window.queueStepUpdate(14);
+  }
+
   // Save state before redirect (so back button returns to checkout page, not quiz start)
   saveStateBeforeCheckout();
-  
+
   // Redirect directly to Stripe Payment Link (bypasses Worker completely)
   const stripePaymentLink = 'https://buy.stripe.com/dRmbJ188V6dEc7G76C2sM0y';
   const checkoutUrl = stripePaymentLink + '?client_reference_id=' + encodeURIComponent(uid) + '&prefilled_email=' + encodeURIComponent(email);
-  
+
   console.log('→ REDIRECTING TO STRIPE:', checkoutUrl);
   window.location.replace(checkoutUrl);
 }
