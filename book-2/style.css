@@ -1220,3 +1220,262 @@ body {
 .pac-item:hover {
   background-color: #f5f5f5;
 }
+
+/* ══════════════════════════════════════════════════════════
+   GENDER SECTION - HIGHLIGHTED WITH PULSE
+   ══════════════════════════════════════════════════════════ */
+.gender-section {
+  background: linear-gradient(135deg, rgba(201,162,39,0.08) 0%, rgba(107,91,149,0.06) 100%);
+  border: 2px solid rgba(201,162,39,0.25);
+  border-radius: 16px;
+  padding: 24px 20px;
+  margin: 8px 0 16px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.gender-section .gender-label {
+  font-size: 15px;
+  margin-bottom: 18px;
+  color: #2a2545;
+}
+
+.gender-section .gender-row-v2 {
+  max-width: 100%;
+  margin-bottom: 0;
+}
+
+.gender-section .btn-gender-v2 {
+  background: #ffffff;
+  border: 2.5px solid rgba(201,162,39,0.35);
+  box-shadow: 0 4px 16px rgba(201,162,39,0.15);
+}
+
+.gender-section .btn-gender-v2:hover {
+  border-color: var(--gold);
+  box-shadow: 0 6px 24px rgba(201,162,39,0.3);
+}
+
+/* Pulse animation for gender buttons */
+@keyframes pulse-border {
+  0%, 100% { 
+    border-color: rgba(201,162,39,0.35);
+    box-shadow: 0 4px 16px rgba(201,162,39,0.15);
+  }
+  50% { 
+    border-color: rgba(201,162,39,0.7);
+    box-shadow: 0 4px 24px rgba(201,162,39,0.35);
+  }
+}
+
+.pulse-hint {
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+.pulse-hint:hover {
+  animation: none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CUSTOMERS CAROUSEL (floating bubbles)
+   ══════════════════════════════════════════════════════════ */
+.customers-carousel-section {
+  width: 100%;
+  padding: 28px 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(247,245,255,0.5) 0%, rgba(255,255,255,0) 100%);
+  margin-top: 24px;
+}
+
+.customers-carousel-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-style: italic;
+  color: #6b6680;
+  margin-bottom: 20px;
+}
+
+.customers-carousel-wrap {
+  overflow: hidden;
+  width: 100%;
+}
+
+.customers-carousel-track {
+  display: flex;
+  gap: 16px;
+  width: max-content;
+  will-change: transform;
+}
+
+.customers-carousel-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.customers-carousel-item img {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(201,162,39,0.35);
+  box-shadow: 0 4px 12px rgba(13,13,31,0.1);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.customers-carousel-item img:hover {
+  transform: scale(1.1);
+  border-color: var(--gold);
+}
+
+.customers-carousel-item span {
+  font-size: 11px;
+  color: #9490b0;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.customers-carousel-fade-left,
+.customers-carousel-fade-right {
+  position: absolute;
+  top: 50px;
+  width: 60px;
+  height: 100px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.customers-carousel-fade-left {
+  left: 0;
+  background: linear-gradient(to right, #f7f5ff, transparent);
+}
+
+.customers-carousel-fade-right {
+  right: 0;
+  background: linear-gradient(to left, #f7f5ff, transparent);
+}
+
+/* ══════════════════════════════════════════════════════════
+   REVIEWS CAROUSEL
+   ══════════════════════════════════════════════════════════ */
+.reviews-carousel-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.reviews-carousel {
+  display: flex;
+  overflow: hidden;
+  scroll-behavior: smooth;
+  gap: 12px;
+  flex: 1;
+  scroll-snap-type: x mandatory;
+}
+
+.reviews-carousel .review-card {
+  min-width: 100%;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.reviews-nav {
+  background: rgba(255,255,255,0.95);
+  border: 1.5px solid rgba(201,162,39,0.3);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  color: var(--gold);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.reviews-nav:hover {
+  background: var(--gold);
+  color: #ffffff;
+  border-color: var(--gold);
+}
+
+.reviews-nav:active {
+  transform: scale(0.95);
+}
+
+.reviews-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.reviews-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(201,162,39,0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reviews-dot.active {
+  background: var(--gold);
+  transform: scale(1.2);
+}
+
+.reviews-dot:hover {
+  background: rgba(201,162,39,0.6);
+}
+
+/* Hide old grid layout, use carousel */
+.reviews-grid {
+  display: none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   iOS SELECT FIX
+   ══════════════════════════════════════════════════════════ */
+/* Fix for iOS select dropdown closing immediately */
+.select-input {
+  /* Remove problematic iOS styling */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  /* Ensure touch events work properly */
+  touch-action: manipulation;
+  /* Prevent zoom on focus (iOS) */
+  font-size: 16px !important;
+}
+
+/* iOS-specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .select-input {
+    /* Ensure select is tappable */
+    cursor: pointer;
+    /* Add padding for touch target */
+    min-height: 44px;
+  }
+  
+  /* Prevent parent from capturing touch events */
+  .dob-row, .time-row {
+    touch-action: auto;
+  }
+}
+
+/* Add dropdown arrow since we removed native appearance */
+.select-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239490b0' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}

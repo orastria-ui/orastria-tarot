@@ -63,8 +63,8 @@ src="https://www.facebook.com/tr?id=1196585509341329&ev=PageView&noscript=1"
       Free personalised book
     </div>
 
-    <h1 class="landing-title">Your stars have a story<br><em>written just for you</em></h1>
-    <p class="landing-title-sub">A fully personalised astrology book based on your exact birth chart</p>
+    <h1 class="landing-title">Your birth chart explains<br><em>the patterns you can't escape</em></h1>
+    <p class="landing-title-sub">Get a Free personalised book in your mailbox in 60 seconds</p>
 
     <!-- Floating SVG book -->
     <div class="landing-book-wrap">
@@ -106,20 +106,20 @@ src="https://www.facebook.com/tr?id=1196585509341329&ev=PageView&noscript=1"
       <span><strong style="color:#3a3555;">60 sec</strong> quiz</span>
     </div>
 
-    <p class="gender-label">Start by selecting your gender:</p>
-    
-    <!-- Gender buttons with images -->
-    <div class="gender-row-v2">
-      <button class="btn-gender-v2" onclick="selectGender('Male')">
-        <img src="https://75462f83901a6b7548a777cd6ed7e06a.cdn.bubble.io/f1761552031672x128007274349768220/ChatGPT%20Image%2027%20oct.%202025%2C%2011_59_12.png" alt="Male" class="gender-img" />
-        <span>Male</span>
-      </button>
-      <button class="btn-gender-v2" onclick="selectGender('Female')">
-        <img src="https://75462f83901a6b7548a777cd6ed7e06a.cdn.bubble.io/f1761552158265x591227909824715800/ChatGPT%20Image%2027%20oct.%202025%2C%2011_59_13.png" alt="Female" class="gender-img" />
-        <span>Female</span>
-      </button>
+    <!-- Gender selection - highlighted section -->
+    <div class="gender-section">
+      <p class="gender-label">👇 Start by selecting your gender:</p>
+      <div class="gender-row-v2">
+        <button class="btn-gender-v2 pulse-hint" onclick="selectGender('Male')">
+          <img src="https://75462f83901a6b7548a777cd6ed7e06a.cdn.bubble.io/f1761552031672x128007274349768220/ChatGPT%20Image%2027%20oct.%202025%2C%2011_59_12.png" alt="Male" class="gender-img" />
+          <span>Male</span>
+        </button>
+        <button class="btn-gender-v2 pulse-hint" onclick="selectGender('Female')">
+          <img src="https://75462f83901a6b7548a777cd6ed7e06a.cdn.bubble.io/f1761552158265x591227909824715800/ChatGPT%20Image%2027%20oct.%202025%2C%2011_59_13.png" alt="Female" class="gender-img" />
+          <span>Female</span>
+        </button>
+      </div>
     </div>
-    <button class="btn-gender btn-ghost" onclick="selectGender('Other')" style="max-width:180px;margin:0 auto;">Other</button>
 
     <!-- trust badges -->
     <div class="trust-row">
@@ -129,104 +129,133 @@ src="https://www.facebook.com/tr?id=1196585509341329&ev=PageView&noscript=1"
     </div>
 
     <!-- ═══════════════════════════════════════════════
-         REVIEWS SECTION
+         HAPPY CUSTOMERS CAROUSEL (floating bubbles)
+    ═══════════════════════════════════════════════ -->
+    <div class="customers-carousel-section">
+      <p class="customers-carousel-label">Join thousands of happy readers ✦</p>
+      <div class="customers-carousel-wrap">
+        <div class="customers-carousel-track" id="customers-carousel-track">
+          <div class="customers-carousel-item"><img src="https://f005.backblazeb2.com/file/publicorastria/Emma.avif" alt="Emma" /><span>Emma</span></div>
+          <div class="customers-carousel-item"><img src="https://f005.backblazeb2.com/file/publicorastria/olivia.avif" alt="Olivia" /><span>Olivia</span></div>
+          <div class="customers-carousel-item"><img src="https://f005.backblazeb2.com/file/publicorastria/James.avif" alt="James" /><span>James</span></div>
+          <div class="customers-carousel-item"><img src="https://f005.backblazeb2.com/file/publicorastria/hannah.avif" alt="Hannah" /><span>Hannah</span></div>
+          <div class="customers-carousel-item"><img src="https://f005.backblazeb2.com/file/publicorastria/Grace.avif" alt="Grace" /><span>Grace</span></div>
+          <div class="customers-carousel-item"><img src="https://f005.backblazeb2.com/file/publicorastria/David.avif" alt="David" /><span>David</span></div>
+          <div class="customers-carousel-item"><img src="https://f005.backblazeb2.com/file/publicorastria/chris.avif" alt="Chris" /><span>Chris</span></div>
+          <div class="customers-carousel-item"><img src="https://f005.backblazeb2.com/file/publicorastria/daniel.avif" alt="Daniel" /><span>Daniel</span></div>
+          <div class="customers-carousel-item"><img src="https://f005.backblazeb2.com/file/publicorastria/Anthony.avif" alt="Anthony" /><span>Anthony</span></div>
+          <div class="customers-carousel-item"><img src="https://f005.backblazeb2.com/file/publicorastria/carlos.avif" alt="Carlos" /><span>Carlos</span></div>
+          <div class="customers-carousel-item"><img src="https://f005.backblazeb2.com/file/publicorastria/aisha.avif" alt="Aisha" /><span>Aisha</span></div>
+        </div>
+      </div>
+      <div class="customers-carousel-fade-left"></div>
+      <div class="customers-carousel-fade-right"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         REVIEWS CAROUSEL
     ═══════════════════════════════════════════════ -->
     <div class="reviews-section">
       <h3 class="reviews-title">What Our Readers Say</h3>
-      <div class="reviews-grid">
+      <div class="reviews-carousel-wrap">
+        <button class="reviews-nav reviews-nav-prev" onclick="moveReviewCarousel(-1)">‹</button>
+        <div class="reviews-carousel" id="reviews-carousel">
 
-        <div class="review-card">
-          <div class="review-header">
-            <span class="review-name">Emma</span>
-            <span class="review-location">• Los Angeles</span>
-            <span class="review-stars">★★★★★</span>
+          <div class="review-card">
+            <div class="review-header">
+              <span class="review-name">Emma</span>
+              <span class="review-location">• Los Angeles</span>
+              <span class="review-stars">★★★★★</span>
+            </div>
+            <p class="review-text">"I was skeptical at first, but my birth chart reading was incredibly accurate. The relationship insights helped me understand why my past relationships failed. Finally, some clarity!"</p>
+            <div class="review-footer">
+              <span class="review-badge">Birth Chart</span>
+              <span class="review-time">2 hours ago</span>
+            </div>
           </div>
-          <p class="review-text">"I was skeptical at first, but my birth chart reading was incredibly accurate. The relationship insights helped me understand why my past relationships failed. Finally, some clarity!"</p>
-          <div class="review-footer">
-            <span class="review-badge">Birth Chart</span>
-            <span class="review-time">2 hours ago</span>
+
+          <div class="review-card">
+            <div class="review-header">
+              <span class="review-name">James</span>
+              <span class="review-location">• London</span>
+              <span class="review-stars">★★★★★</span>
+            </div>
+            <p class="review-text">"Received my personalised book in minutes. The career guidance section was spot-on — I'm finally making changes I should have made years ago. Worth every penny."</p>
+            <div class="review-footer">
+              <span class="review-badge">Career Section</span>
+              <span class="review-time">45 minutes ago</span>
+            </div>
           </div>
+
+          <div class="review-card">
+            <div class="review-header">
+              <span class="review-name">Sofia</span>
+              <span class="review-location">• Paris</span>
+              <span class="review-stars">★★★★★</span>
+            </div>
+            <p class="review-text">"This is the most detailed astrology reading I've ever received. 137 pages of pure insight about myself. The love compatibility analysis was eye-opening."</p>
+            <div class="review-footer">
+              <span class="review-badge">137 Pages</span>
+              <span class="review-time">1 hour ago</span>
+            </div>
+          </div>
+
+          <div class="review-card">
+            <div class="review-header">
+              <span class="review-name">Marcus</span>
+              <span class="review-location">• Sydney</span>
+              <span class="review-stars">★★★★★</span>
+            </div>
+            <p class="review-text">"The future predictions and key dates section is what sold me. Already two events came true this month. My friends think I've become psychic!"</p>
+            <div class="review-footer">
+              <span class="review-badge">Predictions</span>
+              <span class="review-time">3 hours ago</span>
+            </div>
+          </div>
+
+          <div class="review-card">
+            <div class="review-header">
+              <span class="review-name">Priya</span>
+              <span class="review-location">• Mumbai</span>
+              <span class="review-stars">★★★★★</span>
+            </div>
+            <p class="review-text">"As a Scorpio, I thought I knew myself well. This book revealed layers I never explored. The personality analysis section literally made me cry (in a good way)."</p>
+            <div class="review-footer">
+              <span class="review-badge">Personality</span>
+              <span class="review-time">30 minutes ago</span>
+            </div>
+          </div>
+
+          <div class="review-card">
+            <div class="review-header">
+              <span class="review-name">Lucas</span>
+              <span class="review-location">• Berlin</span>
+              <span class="review-stars">★★★★★</span>
+            </div>
+            <p class="review-text">"I got the free version first, then immediately upgraded to the full 137-page book. The tarot and numerology sections added so much depth. Absolutely recommend."</p>
+            <div class="review-footer">
+              <span class="review-badge">Full Book</span>
+              <span class="review-time">5 hours ago</span>
+            </div>
+          </div>
+
+          <div class="review-card">
+            <div class="review-header">
+              <span class="review-name">Aisha</span>
+              <span class="review-location">• Dubai</span>
+              <span class="review-stars">★★★★★</span>
+            </div>
+            <p class="review-text">"Bought this for myself and then ordered for my whole family. Everyone was amazed by how accurate their readings were. This is the real deal."</p>
+            <div class="review-footer">
+              <span class="review-badge">Family Gift</span>
+              <span class="review-time">15 minutes ago</span>
+            </div>
+          </div>
+
         </div>
-
-        <div class="review-card">
-          <div class="review-header">
-            <span class="review-name">James</span>
-            <span class="review-location">• London</span>
-            <span class="review-stars">★★★★★</span>
-          </div>
-          <p class="review-text">"Received my personalised book in minutes. The career guidance section was spot-on — I'm finally making changes I should have made years ago. Worth every penny."</p>
-          <div class="review-footer">
-            <span class="review-badge">Career Section</span>
-            <span class="review-time">45 minutes ago</span>
-          </div>
-        </div>
-
-        <div class="review-card">
-          <div class="review-header">
-            <span class="review-name">Sofia</span>
-            <span class="review-location">• Paris</span>
-            <span class="review-stars">★★★★★</span>
-          </div>
-          <p class="review-text">"This is the most detailed astrology reading I've ever received. 137 pages of pure insight about myself. The love compatibility analysis was eye-opening."</p>
-          <div class="review-footer">
-            <span class="review-badge">137 Pages</span>
-            <span class="review-time">1 hour ago</span>
-          </div>
-        </div>
-
-        <div class="review-card">
-          <div class="review-header">
-            <span class="review-name">Marcus</span>
-            <span class="review-location">• Sydney</span>
-            <span class="review-stars">★★★★★</span>
-          </div>
-          <p class="review-text">"The future predictions and key dates section is what sold me. Already two events came true this month. My friends think I've become psychic!"</p>
-          <div class="review-footer">
-            <span class="review-badge">Predictions</span>
-            <span class="review-time">3 hours ago</span>
-          </div>
-        </div>
-
-        <div class="review-card">
-          <div class="review-header">
-            <span class="review-name">Priya</span>
-            <span class="review-location">• Mumbai</span>
-            <span class="review-stars">★★★★★</span>
-          </div>
-          <p class="review-text">"As a Scorpio, I thought I knew myself well. This book revealed layers I never explored. The personality analysis section literally made me cry (in a good way)."</p>
-          <div class="review-footer">
-            <span class="review-badge">Personality</span>
-            <span class="review-time">30 minutes ago</span>
-          </div>
-        </div>
-
-        <div class="review-card">
-          <div class="review-header">
-            <span class="review-name">Lucas</span>
-            <span class="review-location">• Berlin</span>
-            <span class="review-stars">★★★★★</span>
-          </div>
-          <p class="review-text">"I got the free version first, then immediately upgraded to the full 137-page book. The tarot and numerology sections added so much depth. Absolutely recommend."</p>
-          <div class="review-footer">
-            <span class="review-badge">Full Book</span>
-            <span class="review-time">5 hours ago</span>
-          </div>
-        </div>
-
-        <div class="review-card">
-          <div class="review-header">
-            <span class="review-name">Aisha</span>
-            <span class="review-location">• Dubai</span>
-            <span class="review-stars">★★★★★</span>
-          </div>
-          <p class="review-text">"Bought this for myself and then ordered for my whole family. Everyone was amazed by how accurate their readings were. This is the real deal."</p>
-          <div class="review-footer">
-            <span class="review-badge">Family Gift</span>
-            <span class="review-time">15 minutes ago</span>
-          </div>
-        </div>
-
+        <button class="reviews-nav reviews-nav-next" onclick="moveReviewCarousel(1)">›</button>
       </div>
+      <div class="reviews-dots" id="reviews-dots"></div>
     </div>
 
     <!-- ═══════════════════════════════════════════════

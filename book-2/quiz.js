@@ -736,3 +736,133 @@ function sendFreeBookOnly() {
   }
   alert('Your free book will be sent to your email!');
 }
+
+// ══════════════════════════════════════════════════════════
+// CUSTOMERS CAROUSEL (auto-scrolling bubbles)
+// ══════════════════════════════════════════════════════════
+(function initCustomersCarousel() {
+  const track = document.getElementById('customers-carousel-track');
+  if (!track) return;
+
+  // Clone items for infinite scroll
+  const originals = Array.from(track.children);
+  originals.forEach(item => track.appendChild(item.cloneNode(true)));
+
+  const speed = 0.5;
+  let offset = 0;
+  let paused = false;
+
+  track.addEventListener('mouseenter', () => paused = true);
+  track.addEventListener('mouseleave', () => paused = false);
+  track.addEventListener('touchstart', () => paused = true, { passive: true });
+  track.addEventListener('touchend', () => setTimeout(() => paused = false, 2000));
+
+  function tick() {
+    if (!paused) {
+      offset += speed;
+      const halfWidth = originals.reduce((sum, el) => sum + el.offsetWidth + 16, 0);
+      if (offset >= halfWidth) offset -= halfWidth;
+      track.style.transform = `translateX(-${offset}px)`;
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
+// ══════════════════════════════════════════════════════════
+// REVIEWS CAROUSEL (with arrows)
+// ══════════════════════════════════════════════════════════
+let currentReviewIndex = 0;
+const reviewsPerView = 1;
+
+function initReviewsCarousel() {
+  const carousel = document.getElementById('reviews-carousel');
+  const dotsContainer = document.getElementById('reviews-dots');
+  if (!carousel || !dotsContainer) return;
+
+  const cards = carousel.querySelectorAll('.review-card');
+  const totalReviews = cards.length;
+  const totalDots = totalReviews;
+
+  // Create dots
+  dotsContainer.innerHTML = '';
+  for (let i = 0; i < totalDots; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'reviews-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goToReview(i);
+    dotsContainer.appendChild(dot);
+  }
+
+  updateReviewsCarousel();
+}
+
+function moveReviewCarousel(direction) {
+  const carousel = document.getElementById('reviews-carousel');
+  if (!carousel) return;
+
+  const cards = carousel.querySelectorAll('.review-card');
+  const totalReviews = cards.length;
+
+  currentReviewIndex += direction;
+  
+  if (currentReviewIndex < 0) currentReviewIndex = totalReviews - 1;
+  if (currentReviewIndex >= totalReviews) currentReviewIndex = 0;
+
+  updateReviewsCarousel();
+}
+
+function goToReview(index) {
+  currentReviewIndex = index;
+  updateReviewsCarousel();
+}
+
+function updateReviewsCarousel() {
+  const carousel = document.getElementById('reviews-carousel');
+  const dotsContainer = document.getElementById('reviews-dots');
+  if (!carousel) return;
+
+  const cards = carousel.querySelectorAll('.review-card');
+  const cardWidth = cards[0]?.offsetWidth || 0;
+  const gap = 12;
+
+  carousel.scrollTo({
+    left: currentReviewIndex * (cardWidth + gap),
+    behavior: 'smooth'
+  });
+
+  // Update dots
+  if (dotsContainer) {
+    const dots = dotsContainer.querySelectorAll('.reviews-dot');
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === currentReviewIndex);
+    });
+  }
+}
+
+// Initialize reviews carousel when DOM is ready
+document.addEventListener('DOMContentLoaded', initReviewsCarousel);
+
+// Also handle swipe on reviews
+(function initReviewsSwipe() {
+  const carousel = document.getElementById('reviews-carousel');
+  if (!carousel) return;
+
+  let startX = 0;
+  let isDragging = false;
+
+  carousel.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    isDragging = true;
+  }, { passive: true });
+
+  carousel.addEventListener('touchend', e => {
+    if (!isDragging) return;
+    const endX = e.changedTouches[0].clientX;
+    const diff = startX - endX;
+    
+    if (Math.abs(diff) > 50) {
+      moveReviewCarousel(diff > 0 ? 1 : -1);
+    }
+    isDragging = false;
+  }, { passive: true });
+})();
