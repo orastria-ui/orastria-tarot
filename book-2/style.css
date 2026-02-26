@@ -1362,44 +1362,65 @@ body {
 /* ══════════════════════════════════════════════════════════
    REVIEWS CAROUSEL
    ══════════════════════════════════════════════════════════ */
+.reviews-section {
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 40px;
+  overflow: hidden; /* Prevent horizontal scroll */
+}
+
 .reviews-carousel-wrap {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
   width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .reviews-carousel {
   display: flex;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   scroll-behavior: smooth;
-  gap: 12px;
+  gap: 0;
   flex: 1;
   scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE */
+  padding: 4px 0;
+}
+
+.reviews-carousel::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }
 
 .reviews-carousel .review-card {
-  min-width: 100%;
+  min-width: calc(100% - 80px); /* Account for nav buttons */
+  max-width: calc(100% - 80px);
   flex-shrink: 0;
-  scroll-snap-align: start;
+  scroll-snap-align: center;
+  margin: 0 4px;
 }
 
 .reviews-nav {
   background: rgba(255,255,255,0.95);
   border: 1.5px solid rgba(201,162,39,0.3);
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 18px;
   color: var(--gold);
   transition: all 0.2s ease;
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 2;
 }
 
 .reviews-nav:hover {
@@ -1442,40 +1463,123 @@ body {
   display: none;
 }
 
-/* ══════════════════════════════════════════════════════════
-   iOS SELECT FIX
-   ══════════════════════════════════════════════════════════ */
-/* Fix for iOS select dropdown closing immediately */
-.select-input {
-  /* Remove problematic iOS styling */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  /* Ensure touch events work properly */
-  touch-action: manipulation;
-  /* Prevent zoom on focus (iOS) */
-  font-size: 16px !important;
-}
-
-/* iOS-specific fixes */
-@supports (-webkit-touch-callout: none) {
-  .select-input {
-    /* Ensure select is tappable */
-    cursor: pointer;
-    /* Add padding for touch target */
-    min-height: 44px;
+/* Mobile responsive for reviews */
+@media (max-width: 420px) {
+  .reviews-carousel .review-card {
+    min-width: calc(100% - 16px);
+    max-width: calc(100% - 16px);
+    margin: 0 8px;
   }
   
-  /* Prevent parent from capturing touch events */
-  .dob-row, .time-row {
-    touch-action: auto;
+  .reviews-nav {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    font-size: 16px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .reviews-nav-prev {
+    left: 0;
+  }
+  
+  .reviews-nav-next {
+    right: 0;
+  }
+  
+  .reviews-carousel-wrap {
+    padding: 0 32px;
+  }
+  
+  .reviews-carousel {
+    padding: 4px;
   }
 }
 
-/* Add dropdown arrow since we removed native appearance */
+/* ══════════════════════════════════════════════════════════
+   iOS SELECT FIX - Enhanced for iPhone 16 Pro
+   ══════════════════════════════════════════════════════════ */
+/* 
+ * Bug: On iOS Safari, select dropdowns open and immediately close.
+ * Root cause: Often related to re-renders, focus stealing, or CSS issues.
+ * Solution: Use native appearance on iOS and ensure no interference.
+ */
+
+/* Base select styling - KEEP native appearance on iOS */
 .select-input {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239490b0' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 30px;
+  flex: 1;
+  padding: 13px 10px;
+  background: #f7f5ff;
+  border: 1.5px solid rgba(13,13,31,0.12);
+  border-radius: var(--radius-sm);
+  color: #0d0d1f;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition);
+  text-align: center;
+  /* Critical for iOS: font-size >= 16px prevents zoom */
+  font-size: 16px !important;
+  /* Let iOS handle the appearance natively */
+  -webkit-appearance: menulist-button;
+  appearance: menulist-button;
+  /* Minimum touch target size */
+  min-height: 48px;
+}
+
+.select-input:focus { 
+  border-color: var(--gold); 
+}
+
+.select-input option { 
+  background: #ffffff; 
+  color: #0d0d1f; 
+}
+
+/* Container fixes - ensure no interference with select */
+.dob-row, .time-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 0;
+  /* Prevent any touch interference */
+  touch-action: auto;
+  -webkit-touch-callout: default;
+}
+
+/* iOS Safari specific - detected via touch support */
+@supports (-webkit-touch-callout: none) {
+  .select-input {
+    /* Use full native iOS select appearance */
+    -webkit-appearance: menulist-button;
+    appearance: menulist-button;
+    /* Ensure tappable */
+    cursor: pointer;
+    /* Larger touch target */
+    min-height: 48px;
+    padding: 14px 10px;
+    /* Prevent any transform/transition on focus that could cause re-render */
+    transform: none !important;
+    will-change: auto;
+  }
+  
+  /* Prevent focus outline from causing layout shift */
+  .select-input:focus {
+    outline: none;
+    transform: none !important;
+  }
+  
+  /* iOS focused state - prevent any visual changes that could cause re-render */
+  .select-input.ios-focused {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  /* Ensure parent containers don't interfere */
+  .step, .info-group {
+    overflow: visible;
+  }
 }

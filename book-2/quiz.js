@@ -256,6 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initPlacesAutocomplete();
   initLiveCounter();
+  
+  // iOS Safari select dropdown fix
+  initIOSSelectFix();
 
   document.getElementById('birth-place').addEventListener('keydown', e => { if(e.key==='Enter') submitBirthInfo(); });
   document.getElementById('user-name').addEventListener('keydown', e => { if(e.key==='Enter') submitNameAndCover(); });
@@ -271,6 +274,60 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(applyRestoredState, 100);
   }
 });
+
+// ══════════════════════════════════════════════════════════
+// iOS SELECT DROPDOWN FIX
+// Bug: On iOS Safari (especially iPhone 16 Pro), select dropdowns
+// open and immediately close. This is often caused by focus/blur
+// events firing in quick succession or touch events being captured.
+// ══════════════════════════════════════════════════════════
+function initIOSSelectFix() {
+  // Only apply on iOS
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  
+  if (!isIOS) return;
+  
+  console.log('[iOS Fix] Applying iOS select dropdown fixes');
+  
+  const selects = document.querySelectorAll('.select-input');
+  
+  selects.forEach(select => {
+    // Prevent any programmatic blur during interaction
+    let isInteracting = false;
+    
+    select.addEventListener('touchstart', (e) => {
+      isInteracting = true;
+      // Don't prevent default - let iOS handle natively
+    }, { passive: true });
+    
+    select.addEventListener('touchend', () => {
+      // Keep interacting flag for a bit to prevent blur interference
+      setTimeout(() => { isInteracting = false; }, 500);
+    }, { passive: true });
+    
+    select.addEventListener('focus', () => {
+      isInteracting = true;
+      // Add a class to prevent any CSS transitions during focus
+      select.classList.add('ios-focused');
+    });
+    
+    select.addEventListener('blur', (e) => {
+      // Small delay before removing class to prevent flicker
+      setTimeout(() => {
+        select.classList.remove('ios-focused');
+        isInteracting = false;
+      }, 100);
+    });
+    
+    // Prevent mousedown from interfering (some iOS versions fire both)
+    select.addEventListener('mousedown', (e) => {
+      if (isInteracting) {
+        e.stopPropagation();
+      }
+    });
+  });
+}
 
 function populateDaySelect() {
   const month = parseInt(document.getElementById('dob-month').value) || 1;
@@ -336,6 +393,11 @@ function showStepWithoutTracking(n) {
   const pct = ((n-1) / (maxStep-1)) * 100;
   document.getElementById('progress-fill').style.width = pct + '%';
   document.getElementById('back-btn').style.visibility = n <= 1 ? 'hidden' : 'visible';
+  
+  // Update book cover with birthPlace when arriving at step 9
+  if (n === 9) {
+    updateBookCoverDate();
+  }
 }
 
 function showStep(n) {
