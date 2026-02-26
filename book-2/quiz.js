@@ -694,7 +694,7 @@ function startLoading() {
 function animateLoading() {
   const bars = ['lbar-1','lbar-2','lbar-3'];
   const pcts = ['lpct-1','lpct-2','lpct-3'];
-  const durations = [8000, 9000, 13000];
+  const durations = [5000, 5000, 5000]; // 15 sec total (5 sec per bar)
 
   function runBar(i) {
     if (i >= bars.length) {

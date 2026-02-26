@@ -1017,13 +1017,20 @@ body {
 #screen-loading {
   background: #ffffff;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* Content at top, not centered */
+  padding-top: 60px;
 }
 .loading-content {
   max-width: 400px;
   width: 100%;
   padding: 40px 24px;
   text-align: center;
+}
+.loading-content .logo {
+  display: block;
+  margin: 0 auto 24px auto;
+  width: 140px;
+  height: auto;
 }
 .loading-title {
   font-family: 'Cormorant Garamond', serif;
